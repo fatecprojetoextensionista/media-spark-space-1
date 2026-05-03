@@ -33,7 +33,7 @@ export function PortalLayout() {
             </div>
             <div className="flex gap-4">
               <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link>
-              <Link to="/dashboard" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
+              <Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function PortalLayout() {
               <ul className="space-y-2 text-sm text-primary-foreground/70">
                 <li><Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link></li>
                 <li><Link to="/busca" className="hover:text-primary-foreground transition-colors">Pesquisar</Link></li>
-                <li><Link to="/dashboard" className="hover:text-primary-foreground transition-colors">Área Admin</Link></li>
+                <li><Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link></li>
               </ul>
             </div>
             <div>
