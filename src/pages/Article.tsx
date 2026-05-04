@@ -2,39 +2,26 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ArticleData {
-  id: string;
-  title: string;
-  excerpt: string | null;
-  content: string;
-  cover_image_url: string | null;
-  published_at: string | null;
-  views: number;
-  category: { name: string; slug: string } | null;
-}
-
 export default function Article() {
-  // O useParams pega o 'id' da URL, que no seu caso é o texto "teste1"
-  const { id } = useParams(); 
-  const [article, setArticle] = useState<ArticleData | null>(null);
+  const { id } = useParams(); // O Lovable usa 'id' como nome padrão na rota
+  const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchArticle = async () => {
+      if (!id) return;
+      
       setLoading(true);
       const { data, error } = await supabase
         .from("articles")
-        .select("id, title, excerpt, content, cover_image_url, published_at, views, category:categories(name, slug)")
-        // MUDANÇA CRUCIAL: Buscamos na coluna 'slug' usando o valor que veio da URL
-        .eq("slug", id!) 
+        .select("*, category:categories(name, slug)")
+        .eq("slug", id) // Aqui dizemos: "Procura o texto da URL na coluna slug"
         .eq("status", "published")
         .maybeSingle();
 
-      if (error) {
-        console.error("Erro ao buscar artigo:", error);
-      }
-
-      setArticle(data as any);
+      if (error) console.error("Erro:", error);
+      
+      setArticle(data);
       setLoading(false);
 
       if (data) {
@@ -42,7 +29,7 @@ export default function Article() {
       }
     };
 
-    if (id) fetchArticle();
+    fetchArticle();
   }, [id]);
 
   if (loading) return <div className="max-w-3xl mx-auto p-10 text-muted-foreground font-sans">A carregar...</div>;
@@ -50,7 +37,7 @@ export default function Article() {
   if (!article) return (
     <div className="max-w-3xl mx-auto p-10 text-center">
       <h1 className="text-2xl font-serif font-bold mb-2">Artigo não encontrado</h1>
-      <p className="mb-4 text-muted-foreground">Não conseguimos encontrar o artigo com o slug: {id}</p>
+      <p className="mb-4 text-muted-foreground">Não encontramos o artigo: {id}</p>
       <Link to="/" className="text-accent underline">Voltar ao início</Link>
     </div>
   );
