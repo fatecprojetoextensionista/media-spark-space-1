@@ -14,35 +14,43 @@ interface ArticleData {
 }
 
 export default function Article() {
-  // Aqui renomeamos o parâmetro da URL de 'id' para 'slug' para bater com o banco
-  const { id: slug } = useParams(); 
+  // O useParams pega o 'id' da URL, que no seu caso é o texto "teste1"
+  const { id } = useParams(); 
   const [article, setArticle] = useState<ArticleData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
+    const fetchArticle = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
         .from("articles")
         .select("id, title, excerpt, content, cover_image_url, published_at, views, category:categories(name, slug)")
-        .eq("slug", slug!) // Busca pelo texto amigável (ex: 'teste2')
+        // MUDANÇA CRUCIAL: Buscamos na coluna 'slug' usando o valor que veio da URL
+        .eq("slug", id!) 
         .eq("status", "published")
         .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao buscar artigo:", error);
+      }
 
       setArticle(data as any);
       setLoading(false);
 
       if (data) {
-        // Atualiza visualizações usando o ID real do banco
         await supabase.from("articles").update({ views: (data.views ?? 0) + 1 }).eq("id", data.id);
       }
-    })();
-  }, [slug]); // O efeito recarrega se o slug mudar
+    };
+
+    if (id) fetchArticle();
+  }, [id]);
 
   if (loading) return <div className="max-w-3xl mx-auto p-10 text-muted-foreground font-sans">A carregar...</div>;
 
   if (!article) return (
     <div className="max-w-3xl mx-auto p-10 text-center">
       <h1 className="text-2xl font-serif font-bold mb-2">Artigo não encontrado</h1>
+      <p className="mb-4 text-muted-foreground">Não conseguimos encontrar o artigo com o slug: {id}</p>
       <Link to="/" className="text-accent underline">Voltar ao início</Link>
     </div>
   );
@@ -55,12 +63,11 @@ export default function Article() {
         </Link>
       )}
       <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4">{article.title}</h1>
-      {article.excerpt && <p className="text-lg text-muted-foreground mb-6 font-sans">{article.excerpt}</p>}
       <div className="text-sm text-muted-foreground mb-8 font-sans">
         {article.published_at && new Date(article.published_at).toLocaleDateString("pt-BR", { dateStyle: "long" })} · {article.views} visualizações
       </div>
       {article.cover_image_url && (
-        <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8" />
+        <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8 shadow-md" />
       )}
       <div 
         className="prose prose-lg max-w-none whitespace-pre-wrap font-sans" 
