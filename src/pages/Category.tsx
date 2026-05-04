@@ -21,34 +21,49 @@ interface VideoRow {
 }
 
 export default function Category() {
-  const { name } = useParams();
+  const { name } = useParams(); // 'name' aqui é o slug da categoria (ex: tecnologia)
   const [articles, setArticles] = useState<ArticleRow[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [catName, setCatName] = useState("");
 
   useEffect(() => {
     (async () => {
-      // 1. Busca a categoria pelo slug (URL)
-      const { data: cat } = await supabase.from("categories").select("id, name").eq("slug", name!).maybeSingle();
-      if (!cat) return;
-      setCatName(cat.name);
+      // 1. Primeiro, buscamos os dados da categoria usando o slug da URL
+      const { data: cat, error: catError } = await supabase
+        .from("categories")
+        .select("id, name")
+        .eq("slug", name!)
+        .maybeSingle();
 
-      // 2. Busca Artigos desta categoria
+      if (catError || !cat) {
+        console.error("Erro ao buscar categoria:", catError);
+        return;
+      }
+
+      setCatName(cat.name);
+      console.log("ID da Categoria atual:", cat.id); // Isso vai aparecer no F12 do navegador
+
+      // 2. Busca Artigos (usando o ID da categoria encontrada)
       const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at")
         .eq("category_id", cat.id)
         .eq("status", "published")
         .order("published_at", { ascending: false });
+      
       setArticles(artData ?? []);
 
-      // 3. Busca Vídeos desta categoria
-      const { data: vidData } = await supabase
+      // 3. Busca Vídeos (usando o ID da categoria encontrada)
+      const { data: vidData, error: vidError } = await supabase
         .from("videos")
         .select("id, title, slug, thumbnail_url, published_at")
         .eq("category_id", cat.id)
         .eq("published", true)
         .order("published_at", { ascending: false });
+
+      if (vidError) console.error("Erro nos vídeos:", vidError);
+      
+      console.log("Vídeos encontrados para esta categoria:", vidData);
       setVideos(vidData ?? []);
     })();
   }, [name]);
@@ -57,7 +72,6 @@ export default function Category() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Cabeçalho da Categoria */}
       <div className="mb-8">
         <Link to="/" className="text-sm text-muted-foreground hover:text-accent">← Início</Link>
         <h1 className="text-3xl font-serif font-bold mt-2">{catName || "Categoria"}</h1>
@@ -88,7 +102,7 @@ export default function Category() {
         </div>
       )}
 
-      {/* SEÇÃO DE VÍDEOS (Baseado no seu esboço de 3 colunas) */}
+      {/* SEÇÃO DE VÍDEOS */}
       {videos.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-4 mb-6">
@@ -98,7 +112,7 @@ export default function Category() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {videos.map((v) => (
               <Link key={v.id} to={`/video/${v.slug}`} className="group block">
-                <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all">
+                <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                   <div className="relative aspect-video">
                     <img 
                       src={v.thumbnail_url || "/placeholder.svg"} 
@@ -115,9 +129,6 @@ export default function Category() {
                     <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-accent transition-colors">
                       {v.title}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground mt-2">
-                      {v.published_at ? new Date(v.published_at).toLocaleDateString("pt-BR") : ""}
-                    </p>
                   </div>
                 </div>
               </Link>
@@ -126,7 +137,6 @@ export default function Category() {
         </div>
       )}
 
-      {/* Caso não tenha nada na categoria */}
       {totalContent === 0 && (
         <div className="bg-card border border-border rounded-lg p-10 text-center text-muted-foreground font-serif">
           Sem publicações ou vídeos nesta categoria no momento.
