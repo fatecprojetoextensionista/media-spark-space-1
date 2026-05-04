@@ -34,6 +34,8 @@ const App = () => (
             <Route element={<PortalLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/artigo/:id" element={<Article />} />
+              {/* NOVA ROTA ADICIONADA ABAIXO PARA CORRIGIR O ERRO 404 */}
+              <Route path="/video/:id" element={<Article />} /> 
               <Route path="/categoria/:name" element={<Category />} />
               <Route path="/busca" element={<SearchPage />} />
               <Route path="/sobre" element={<About />} />
