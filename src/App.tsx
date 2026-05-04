@@ -8,6 +8,7 @@ import { PortalLayout } from "@/components/portal/PortalLayout";
 import { ProtectedAdmin } from "@/components/admin/ProtectedAdmin";
 import Home from "./pages/Home";
 import Article from "./pages/Article";
+import Video from "./pages/Video"; // <--- IMPORTANTE: Importamos a nova página de vídeo
 import Category from "./pages/Category";
 import SearchPage from "./pages/SearchPage";
 import About from "./pages/About";
@@ -34,8 +35,8 @@ const App = () => (
             <Route element={<PortalLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/artigo/:id" element={<Article />} />
-              {/* NOVA ROTA ADICIONADA ABAIXO PARA CORRIGIR O ERRO 404 */}
-              <Route path="/video/:id" element={<Article />} /> 
+              {/* ROTA CORRIGIDA: Agora aponta para o componente Video em vez de Article */}
+              <Route path="/video/:id" element={<Video />} /> 
               <Route path="/categoria/:name" element={<Category />} />
               <Route path="/busca" element={<SearchPage />} />
               <Route path="/sobre" element={<About />} />
