@@ -21,7 +21,7 @@ interface VideoRow {
 }
 
 export default function Category() {
-  const { name } = useParams(); // O 'name' é o slug que vem da URL
+  const { name } = useParams();
   const [articles, setArticles] = useState<ArticleRow[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [catName, setCatName] = useState("");
@@ -31,11 +31,11 @@ export default function Category() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Busca a categoria ignorando maiúsculas/minúsculas (UX: evita erro de digitação na URL)[cite: 1]
+        // 1. Busca a categoria limpando espaços e ignorando maiúsculas (Essencial para UX)
         const { data: cat, error: catError } = await supabase
           .from("categories")
           .select("id, name")
-          .ilike("slug", name || "") 
+          .ilike("slug", (name || "").trim()) // Remove espaços invisíveis da URL
           .maybeSingle();
 
         if (catError) throw catError;
@@ -50,7 +50,7 @@ export default function Category() {
 
         setCatName(cat.name);
 
-        // 2. Busca Artigos e Vídeos em paralelo (Performance: carrega mais rápido para o usuário)[cite: 1]
+        // 2. Busca Artigos e Vídeos em paralelo para máxima performance
         const [artRes, vidRes] = await Promise.all([
           supabase
             .from("articles")
@@ -66,27 +66,23 @@ export default function Category() {
             .order("published_at", { ascending: false })
         ]);
 
-        if (artRes.error) console.error("Erro nos artigos:", artRes.error);
-        if (vidRes.error) console.error("Erro nos vídeos:", vidRes.error);
-
         setArticles(artRes.data || []);
         setVideos(vidRes.data || []);
 
       } catch (err) {
-        console.error("Erro inesperado na busca de dados:", err);
+        console.error("Erro inesperado:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [name]); // Re-executa sempre que o usuário mudar de categoria na URL[cite: 1]
+  }, [name]);
 
   const totalContent = articles.length + videos.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Cabeçalho dinâmico */}
       <div className="mb-8">
         <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
           ← Início
@@ -94,7 +90,7 @@ export default function Category() {
         <h1 className="text-3xl font-serif font-bold mt-2">
           {loading ? "Carregando..." : catName}
         </h1>
-        {!loading && (
+        {!loading && catName !== "Categoria não encontrada" && (
           <p className="text-muted-foreground text-sm">{totalContent} publicações encontradas</p>
         )}
       </div>
@@ -143,7 +139,7 @@ export default function Category() {
                           alt={v.title}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                          <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg">
+                          <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg font-sans">
                             ▶
                           </div>
                         </div>
@@ -160,7 +156,7 @@ export default function Category() {
             </div>
           )}
 
-          {/* Mensagem de estado vazio (UX Heuristic: Feedback do sistema)[cite: 1] */}
+          {/* ESTADO VAZIO */}
           {totalContent === 0 && (
             <div className="bg-card border border-border rounded-lg p-10 text-center text-muted-foreground font-serif italic">
               Ainda não temos publicações ou vídeos nesta categoria.
