@@ -15,22 +15,43 @@ interface ArticleRow {
   category: { name: string; slug: string } | null;
 }
 
+interface VideoRow {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  published_at: string | null;
+  category: { name: string; slug: string } | null;
+}
+
 const formatDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" }) : "";
 
 export default function Home() {
   const [articles, setArticles] = useState<ArticleRow[]>([]);
+  const [videos, setVideos] = useState<VideoRow[]>([]);
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      // Busca de Artigos
+      const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
         .eq("status", "published")
         .order("published_at", { ascending: false })
         .limit(20);
-      setArticles((data ?? []) as any);
+      setArticles((artData ?? []) as any);
+
+      // Busca de Vídeos
+      const { data: vidData } = await supabase
+        .from("videos")
+        .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug)")
+        .eq("published", true)
+        .order("published_at", { ascending: false })
+        .limit(3);
+      setVideos((vidData ?? []) as any);
 
       const { data: cats } = await supabase.from("categories").select("name, slug");
       if (cats) {
@@ -59,31 +80,24 @@ export default function Home() {
 
   return (
     <div>
+      {/* Seção Hero */}
       <div className="relative h-[400px] overflow-hidden">
         <img
           src={featured?.cover_image_url || heroBg}
           alt={featured?.title || "Portal"}
           className="w-full h-full object-cover"
-          width={1920}
-          height={1080}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" />
-        <div className="absolute inset-0 flex items-end">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 w-full">
+        <div className="absolute inset-0 flex items-end pb-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="inline-block px-3 py-1 bg-destructive text-destructive-foreground text-xs font-semibold rounded mb-3 animate-pulse">
               DESTAQUE
             </div>
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary-foreground mb-2 max-w-2xl">
               {featured?.title || "Bem-vindo ao Portal Institucional"}
             </h1>
-            <p className="text-primary-foreground/80 max-w-xl mb-4">
-              {featured?.excerpt || "Notícias, artigos e recursos disponíveis para a comunidade."}
-            </p>
             {featured && (
-              <Link
-                to={`/artigo/${featured.slug}`}
-                className="inline-flex px-5 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-              >
+              <Link to={`/artigo/${featured.slug}`} className="inline-flex px-5 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
                 Ler mais →
               </Link>
             )}
@@ -93,28 +107,75 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {grid.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {grid.map((a) => (
-                  <ArticleCard
-                    key={a.id}
-                    id={a.slug}
-                    title={a.title}
-                    excerpt={a.excerpt ?? ""}
-                    category={a.category?.name ?? "—"}
-                    author=""
-                    date={formatDate(a.published_at)}
-                    imageUrl={a.cover_image_url ?? undefined}
-                  />
-                ))}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* SEÇÃO 1: ARTIGOS */}
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <h2 className="text-2xl font-serif font-bold">Artigos</h2>
+                <div className="flex-1 h-px bg-border" />
               </div>
-            ) : (
-              <div className="bg-card border border-border rounded-lg p-10 text-center text-muted-foreground">
-                Ainda não há artigos publicados. Aceda a <Link to="/admin" className="text-accent underline">/admin</Link> para criar conteúdo.
+              {grid.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {grid.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name ?? "—"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground py-10 border border-dashed rounded-lg text-center">
+                  Ainda não há artigos disponíveis.
+                </div>
+              )}
+            </div>
+
+            {/* SEÇÃO 2: VÍDEOS (Baseada no seu desenho) */}
+            {videos.length > 0 && (
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <h2 className="text-2xl font-serif font-bold">Vídeos</h2>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {videos.map((v) => (
+                    <Link key={v.id} to={`/video/${v.slug}`} className="group block">
+                      <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all">
+                        <div className="relative aspect-video">
+                          <img 
+                            src={v.thumbnail_url || "/placeholder.svg"} 
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            alt={v.title}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                            <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg">
+                              ▶
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <span className="text-[10px] uppercase tracking-wider text-accent font-bold">
+                            {v.category?.name || "Vídeo"}
+                          </span>
+                          <h3 className="font-semibold text-sm line-clamp-2 mt-1 group-hover:text-accent transition-colors">
+                            {v.title}
+                          </h3>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 
+            {/* SEÇÃO 3: ÚLTIMAS PUBLICAÇÕES */}
             {latest.length > 0 && (
               <div>
                 <div className="flex items-center gap-4 mb-6">
@@ -134,11 +195,7 @@ export default function Home() {
                             <h3 className="font-semibold group-hover:text-accent transition-colors mb-1">{s.title}</h3>
                             <p className="text-sm text-muted-foreground line-clamp-1">{s.excerpt}</p>
                           </div>
-                          {s.cover_image_url ? (
-                            <img src={s.cover_image_url} alt="" className="w-24 h-24 rounded-md object-cover" />
-                          ) : (
-                            <div className="w-24 h-24 rounded-md bg-muted flex items-center justify-center text-2xl">📄</div>
-                          )}
+                          {s.cover_image_url && <img src={s.cover_image_url} alt="" className="w-20 h-20 rounded-md object-cover" />}
                         </div>
                       </div>
                     </Link>
@@ -148,6 +205,7 @@ export default function Home() {
             )}
           </div>
 
+          {/* Sidebar */}
           <div className="space-y-6">
             <TrendingWidget items={trending} />
             <NewsletterWidget />
