@@ -1,122 +1,158 @@
-// ... (mantenha os imports iguais acima)
-import logoPortal from "@/assets/logo-portal.png"; 
+import { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { Menu, X, Search } from "lucide-react";
+import logoImg from "@/assets/logo.png";
+
+// Lista de categorias normalizada para facilitar a manutenção
+const categories = [
+  { name: "Notícias", path: "/categoria/noticias" },
+  { name: "Tecnologia", path: "/categoria/tecnologia" },
+  { name: "Institucional", path: "/categoria/institucional" },
+  { name: "Eventos", path: "/categoria/eventos" },
+  { name: "Recursos", path: "/categoria/recursos" },
+];
 
 export function PortalLayout() {
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.toLowerCase().startsWith(path.toLowerCase());
-  };
+  // UX: Função para destacar o link ativo no menu
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    // Normalizamos para minúsculas para evitar erros de case-sensitivity
+    return location.pathname.toLowerCase().startsWith(path.toLowerCase());
+  };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Top Bar */}
-      <div className="bg-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center text-primary-foreground/80 text-xs py-2">
-            <div className="flex gap-4">
-              <span>📍 Av. Francisco Pignatari, 650 - Carapicuíba - SP</span>
-              <span className="hidden sm:inline">📞 (11) 4185-6600</span>
-            </div>
-            <div className="flex gap-4">
-              <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link>
-              <Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Top Bar */}
+      <div className="bg-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center text-primary-foreground/80 text-xs py-2">
+            <div className="flex gap-4">
+              <span>📧Av. Francisco Pignatari, 650 - Vila Gustavo Correia, Carapicuíba - SP, 06310-390</span>
+              <span className="hidden sm:inline">📞 (11) 4185-6600</span>
+            </div>
+            <div className="flex gap-4">
+              <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link>
+              <Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* Main Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-24"> {/* Aumentei para h-24 para dar destaque à logo */}
-            <Link to="/" className="flex items-center group">
-              {/* LOGO SOZINHA E MAIOR */}
-              <img 
-                src={logoPortal} 
-                alt="Logo" 
-                className="h-16 w-auto object-contain transition-transform group-hover:scale-105" 
-              />
-            </Link>
+      {/* Main Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link to="/" className="flex items-center gap-3">
+              <img src={logoImg} alt="Portal" className="w-10 h-10 object-contain" />
+              <div>
+                <div className="text-xl font-serif font-bold text-foreground tracking-tight">PORTAL</div>
+                <div className="text-[10px] text-muted-foreground tracking-widest uppercase">Institucional</div>
+              </div>
+            </Link>
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-1">
-              <Link
-                to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/") && !location.pathname.includes("categoria")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
-                }`}
-              >
-                Início
-              </Link>
-              
-              {categories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  to={cat.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(cat.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground hover:bg-muted"
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </nav>
+            {/* Desktop Nav: Links dinâmicos com feedback visual */}
+            <nav className="hidden lg:flex items-center gap-1">
+              <Link
+                to="/"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/") && !location.pathname.includes("categoria")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                Início
+              </Link>
+              
+              {categories.map((cat) => (
+                <Link
+                  key={cat.name}
+                  to={cat.path}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive(cat.path)
+                      ? "bg-primary text-primary-foreground"
+                      : "text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </nav>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 rounded-md hover:bg-muted transition-colors"
-              >
-                <Search size={18} />
-              </button>
-              <Link
-                to="/busca"
-                className="hidden md:inline-flex px-4 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                Pesquisar
-              </Link>
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors"
-              >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="p-2 rounded-md hover:bg-muted transition-colors"
+              >
+                <Search size={18} />
+              </button>
+              <Link
+                to="/busca"
+                className="hidden md:inline-flex px-4 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                Pesquisar
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors"
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </div>
 
-      {/* Main Content */}
-      <main className="flex-1">
-        <Outlet />
-      </main>
+          {/* Mobile Nav */}
+          {mobileMenuOpen && (
+            <nav className="lg:hidden pb-4 space-y-1 animate-fade-in border-t border-border mt-2 pt-2">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Início</Link>
+              {categories.map((cat) => (
+                <Link key={cat.name} to={cat.path} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">{cat.name}</Link>
+              ))}
+            </nav>
+          )}
+        </div>
+      </header>
 
-      {/* Footer */}
-      <footer className="bg-primary text-primary-foreground mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="mb-4">
-                {/* Logo no footer também sozinha */}
-                <img src={logoPortal} alt="Logo" className="h-12 w-auto object-contain brightness-0 invert" />
-              </div>
-              <p className="text-sm text-primary-foreground/70">
-                Portal institucional para divulgação de notícias, artigos, vídeos e recursos.
-              </p>
-            </div>
-            {/* ... restante do footer ... */}
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
+      {/* Main Content */}
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      {/* Footer: Mantendo a consistência dos links */}
+      <footer className="bg-primary text-primary-foreground mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <img src={logoImg} alt="Portal" className="w-8 h-8 object-contain brightness-200" />
+                <span className="font-serif font-bold text-lg">PORTAL</span>
+              </div>
+              <p className="text-sm text-primary-foreground/70">
+                Portal institucional para divulgação de notícias, artigos, vídeos e recursos.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider">Categorias</h4>
+              <ul className="space-y-2 text-sm text-primary-foreground/70 font-sans">
+                {categories.map((cat) => (
+                  <li key={cat.name}>
+                    <Link to={cat.path} className="hover:text-primary-foreground transition-colors">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* ... Resto do footer permanece igual */}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
+
+Esse é o portal  src/components/portal/PortalLayout.tsx
