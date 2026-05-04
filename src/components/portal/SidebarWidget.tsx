@@ -55,8 +55,12 @@ export function CategoriesWidget({ categories }: { categories: { name: string; c
         {categories.map((cat) => (
           <Link
             key={cat.name}
-            // Alterado para "/" para alinhar com o menu superior e evitar erros de rota inexistente
-            to="/"
+            /* 
+               Aqui está a mágica: 
+               .toLowerCase() deixa tudo minúsculo (Notícias -> notícias)
+               .normalize("NFD").replace(/[\u0300-\u036f]/g, "") remove os acentos (notícias -> noticias)
+            */
+            to={`/categoria/${cat.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`}
             className="flex items-center justify-between p-2 rounded-md hover:bg-muted transition-colors group"
           >
             <span className="text-sm group-hover:text-accent transition-colors">{cat.name}</span>
