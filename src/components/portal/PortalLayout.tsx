@@ -31,8 +31,8 @@ export function PortalLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center text-primary-foreground/80 text-xs py-2">
             <div className="flex gap-4">
-              <span>📧 contato@portal.org</span>
-              <span className="hidden sm:inline">📞 +55 11 0000-0000</span>
+              <span>📧Av. Francisco Pignatari, 650 - Vila Gustavo Correia, Carapicuíba - SP, 06310-390</span>
+              <span className="hidden sm:inline">📞 (11) 4185-6600</span>
             </div>
             <div className="flex gap-4">
               <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link>
