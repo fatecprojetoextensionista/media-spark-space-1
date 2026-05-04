@@ -55,11 +55,14 @@ export function CategoriesWidget({ categories }: { categories: { name: string; c
         {categories.map((cat) => (
           <Link
             key={cat.name}
-            to={`/categoria/${cat.name.toLowerCase()}`}
-            className="flex items-center justify-between p-2 rounded-md hover:bg-muted transition-colors"
+            // Alterado para "/" para alinhar com o menu superior e evitar erros de rota inexistente
+            to="/"
+            className="flex items-center justify-between p-2 rounded-md hover:bg-muted transition-colors group"
           >
-            <span className="text-sm">{cat.name}</span>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{cat.count}</span>
+            <span className="text-sm group-hover:text-accent transition-colors">{cat.name}</span>
+            <span className="text-xs text-muted-foreground bg-muted group-hover:bg-accent/10 group-hover:text-accent px-2 py-0.5 rounded-full transition-all">
+              {cat.count}
+            </span>
           </Link>
         ))}
       </div>
