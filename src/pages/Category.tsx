@@ -21,29 +21,31 @@ interface VideoRow {
 }
 
 export default function Category() {
-  const { name } = useParams(); // 'name' aqui é o slug da categoria (ex: tecnologia)
+  const { name } = useParams(); // O 'name' é o slug que vem da URL
   const [articles, setArticles] = useState<ArticleRow[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [catName, setCatName] = useState("");
 
   useEffect(() => {
     (async () => {
-      // 1. Primeiro, buscamos os dados da categoria usando o slug da URL
+      // 1. Buscamos a categoria usando .ilike para ignorar maiúsculas/minúsculas
+      // Isso garante que /categoria/Noticias e /categoria/noticias funcionem igual
       const { data: cat, error: catError } = await supabase
         .from("categories")
         .select("id, name")
-        .eq("slug", name!)
+        .ilike("slug", name || "") 
         .maybeSingle();
 
       if (catError || !cat) {
-        console.error("Erro ao buscar categoria:", catError);
+        setCatName("Categoria não encontrada");
+        setArticles([]);
+        setVideos([]);
         return;
       }
 
       setCatName(cat.name);
-      console.log("ID da Categoria atual:", cat.id); // Isso vai aparecer no F12 do navegador
 
-      // 2. Busca Artigos (usando o ID da categoria encontrada)
+      // 2. Busca Artigos desta categoria específica
       const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at")
@@ -53,7 +55,7 @@ export default function Category() {
       
       setArticles(artData ?? []);
 
-      // 3. Busca Vídeos (usando o ID da categoria encontrada)
+      // 3. Busca Vídeos desta categoria específica
       const { data: vidData, error: vidError } = await supabase
         .from("videos")
         .select("id, title, slug, thumbnail_url, published_at")
@@ -62,8 +64,6 @@ export default function Category() {
         .order("published_at", { ascending: false });
 
       if (vidError) console.error("Erro nos vídeos:", vidError);
-      
-      console.log("Vídeos encontrados para esta categoria:", vidData);
       setVideos(vidData ?? []);
     })();
   }, [name]);
@@ -72,13 +72,14 @@ export default function Category() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Cabeçalho dinâmico */}
       <div className="mb-8">
         <Link to="/" className="text-sm text-muted-foreground hover:text-accent">← Início</Link>
-        <h1 className="text-3xl font-serif font-bold mt-2">{catName || "Categoria"}</h1>
+        <h1 className="text-3xl font-serif font-bold mt-2">{catName}</h1>
         <p className="text-muted-foreground text-sm">{totalContent} publicações encontradas</p>
       </div>
 
-      {/* SEÇÃO DE ARTIGOS */}
+      {/* SEÇÃO DE ARTIGOS (Grid de 3 colunas para manter o padrão visual) */}
       {articles.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-4 mb-6">
@@ -102,7 +103,7 @@ export default function Category() {
         </div>
       )}
 
-      {/* SEÇÃO DE VÍDEOS */}
+      {/* SEÇÃO DE VÍDEOS (3 colunas, com ícone de play para boa experiência de UX) */}
       {videos.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-4 mb-6">
@@ -137,9 +138,10 @@ export default function Category() {
         </div>
       )}
 
+      {/* Mensagem de estado vazio (UX Heuristic) */}
       {totalContent === 0 && (
         <div className="bg-card border border-border rounded-lg p-10 text-center text-muted-foreground font-serif">
-          Sem publicações ou vídeos nesta categoria no momento.
+          Ainda não temos publicações ou vídeos nesta categoria.
         </div>
       )}
     </div>
