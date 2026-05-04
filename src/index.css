@@ -15,7 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 30% 12%;
 
-    --primary: 220 60% 20%;
+    /* COR PRINCIPAL AJUSTADA PARA #30334c */
+    --primary: 233 22% 24%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 30% 95%;
@@ -24,7 +25,8 @@
     --muted: 210 20% 94%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 200 80% 45%;
+    /* COR DE DESTAQUE TAMBÉM AJUSTADA PARA O MESMO AZUL */
+    --accent: 233 22% 24%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -32,7 +34,7 @@
 
     --border: 214 20% 88%;
     --input: 214 20% 88%;
-    --ring: 220 60% 20%;
+    --ring: 233 22% 24%;
 
     --radius: 0.5rem;
 
@@ -42,14 +44,15 @@
     --success: 142 72% 38%;
     --success-foreground: 0 0% 100%;
 
-    --sidebar-background: 220 30% 12%;
+    /* SIDEBAR AJUSTADA PARA O NOVO TOM */
+    --sidebar-background: 233 22% 20%;
     --sidebar-foreground: 210 20% 94%;
-    --sidebar-primary: 200 80% 45%;
+    --sidebar-primary: 233 22% 24%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 25% 18%;
     --sidebar-accent-foreground: 210 20% 94%;
     --sidebar-border: 220 20% 22%;
-    --sidebar-ring: 200 80% 45%;
+    --sidebar-ring: 233 22% 24%;
   }
 
   .dark {
@@ -62,8 +65,8 @@
     --popover: 220 25% 12%;
     --popover-foreground: 210 20% 94%;
 
-    --primary: 200 80% 55%;
-    --primary-foreground: 220 30% 8%;
+    --primary: 233 22% 40%;
+    --primary-foreground: 210 20% 94%;
 
     --secondary: 220 20% 18%;
     --secondary-foreground: 210 20% 94%;
@@ -71,7 +74,7 @@
     --muted: 220 20% 18%;
     --muted-foreground: 215 16% 60%;
 
-    --accent: 200 80% 50%;
+    --accent: 233 22% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
@@ -79,16 +82,16 @@
 
     --border: 220 20% 22%;
     --input: 220 20% 22%;
-    --ring: 200 80% 55%;
+    --ring: 233 22% 40%;
 
     --sidebar-background: 220 30% 6%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 200 80% 55%;
+    --sidebar-primary: 233 22% 40%;
     --sidebar-primary-foreground: 220 30% 6%;
     --sidebar-accent: 220 25% 14%;
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 220 20% 16%;
-    --sidebar-ring: 200 80% 55%;
+    --sidebar-ring: 233 22% 40%;
   }
 }
 
