@@ -44,7 +44,7 @@ export default function Home() {
         .limit(20);
       setArticles((artData ?? []) as any);
 
-      // 2. Busca de Vídeos (Nova chamada que criamos)
+      // 2. Busca de Vídeos
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug)")
@@ -53,15 +53,16 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 3. Busca de Categorias e contagem
-      const { data: cats } = await supabase.from("categories").select("name, slug");
+      // 3. Busca de Categorias e contagem correta
+      const { data: cats } = await supabase.from("categories").select("id, name, slug");
       if (cats) {
         const counts = await Promise.all(
           cats.map(async (c) => {
             const { count } = await supabase
               .from("articles")
               .select("*", { count: "exact", head: true })
-              .eq("status", "published");
+              .eq("status", "published")
+              .eq("category_id", c.id); // Agora filtra por categoria de verdade!
             return { name: c.name, count: count ?? 0 };
           }),
         );
@@ -81,7 +82,7 @@ export default function Home() {
 
   return (
     <div>
-      {/* SEÇÃO HERO: O banner principal */}
+      {/* SEÇÃO HERO */}
       <div className="relative h-[400px] overflow-hidden">
         <img
           src={featured?.cover_image_url || heroBg}
@@ -110,7 +111,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-12">
             
-            {/* --- SEÇÃO 1: ARTIGOS (Grid de 2 colunas) --- */}
+            {/* SEÇÃO 1: ARTIGOS */}
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <h2 className="text-2xl font-serif font-bold">Artigos</h2>
@@ -138,7 +139,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* --- SEÇÃO 2: VÍDEOS (Grid de 3 colunas conforme seu desenho) --- */}
+            {/* SEÇÃO 2: VÍDEOS - CORRIGIDA */}
             {videos.length > 0 && (
               <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
@@ -147,7 +148,8 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {videos.map((v) => (
-                    <Link key={v.id} to={`/video/${v.slug}`} className="group block">
+                    /* MUDANÇA AQUI: Trocamos v.slug por v.id para evitar o erro 404 */
+                    <Link key={v.id} to={`/video/${v.id}`} className="group block">
                       <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                         <div className="relative aspect-video">
                           <img 
@@ -176,7 +178,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* --- SEÇÃO 3: ÚLTIMAS PUBLICAÇÕES (Lista horizontal) --- */}
+            {/* SEÇÃO 3: ÚLTIMAS PUBLICAÇÕES */}
             {latest.length > 0 && (
               <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
@@ -208,7 +210,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* SIDEBAR: Widgets laterais */}
+          {/* SIDEBAR */}
           <div className="space-y-6">
             <TrendingWidget items={trending} />
             <NewsletterWidget />
