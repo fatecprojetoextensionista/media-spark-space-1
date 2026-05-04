@@ -35,7 +35,7 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      // Busca de Artigos
+      // 1. Busca de Artigos
       const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
@@ -44,7 +44,7 @@ export default function Home() {
         .limit(20);
       setArticles((artData ?? []) as any);
 
-      // Busca de Vídeos
+      // 2. Busca de Vídeos (Nova chamada que criamos)
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug)")
@@ -53,6 +53,7 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
+      // 3. Busca de Categorias e contagem
       const { data: cats } = await supabase.from("categories").select("name, slug");
       if (cats) {
         const counts = await Promise.all(
@@ -80,7 +81,7 @@ export default function Home() {
 
   return (
     <div>
-      {/* Seção Hero */}
+      {/* SEÇÃO HERO: O banner principal */}
       <div className="relative h-[400px] overflow-hidden">
         <img
           src={featured?.cover_image_url || heroBg}
@@ -109,7 +110,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-12">
             
-            {/* SEÇÃO 1: ARTIGOS */}
+            {/* --- SEÇÃO 1: ARTIGOS (Grid de 2 colunas) --- */}
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <h2 className="text-2xl font-serif font-bold">Artigos</h2>
@@ -131,15 +132,15 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <div className="text-muted-foreground py-10 border border-dashed rounded-lg text-center">
-                  Ainda não há artigos disponíveis.
+                <div className="text-muted-foreground py-10 border border-dashed rounded-lg text-center font-serif">
+                  Aguardando novas publicações...
                 </div>
               )}
             </div>
 
-            {/* SEÇÃO 2: VÍDEOS (Baseada no seu desenho) */}
+            {/* --- SEÇÃO 2: VÍDEOS (Grid de 3 colunas conforme seu desenho) --- */}
             {videos.length > 0 && (
-              <div>
+              <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
                   <h2 className="text-2xl font-serif font-bold">Vídeos</h2>
                   <div className="flex-1 h-px bg-border" />
@@ -147,15 +148,15 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {videos.map((v) => (
                     <Link key={v.id} to={`/video/${v.slug}`} className="group block">
-                      <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all">
+                      <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                         <div className="relative aspect-video">
                           <img 
                             src={v.thumbnail_url || "/placeholder.svg"} 
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             alt={v.title}
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg">
+                            <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
                               ▶
                             </div>
                           </div>
@@ -164,7 +165,7 @@ export default function Home() {
                           <span className="text-[10px] uppercase tracking-wider text-accent font-bold">
                             {v.category?.name || "Vídeo"}
                           </span>
-                          <h3 className="font-semibold text-sm line-clamp-2 mt-1 group-hover:text-accent transition-colors">
+                          <h3 className="font-semibold text-sm line-clamp-2 mt-1 group-hover:text-accent transition-colors leading-tight">
                             {v.title}
                           </h3>
                         </div>
@@ -175,9 +176,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* SEÇÃO 3: ÚLTIMAS PUBLICAÇÕES */}
+            {/* --- SEÇÃO 3: ÚLTIMAS PUBLICAÇÕES (Lista horizontal) --- */}
             {latest.length > 0 && (
-              <div>
+              <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
                   <h2 className="text-2xl font-serif font-bold">Últimas Publicações</h2>
                   <div className="flex-1 h-px bg-border" />
@@ -186,7 +187,7 @@ export default function Home() {
                   {latest.map((s) => (
                     <Link key={s.id} to={`/artigo/${s.slug}`} className="group block">
                       <div className="bg-card rounded-lg border border-border p-4 hover:shadow-md transition-all">
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 items-center">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="px-2 py-0.5 bg-accent/10 text-accent text-xs font-medium rounded">{s.category?.name ?? "—"}</span>
@@ -195,7 +196,9 @@ export default function Home() {
                             <h3 className="font-semibold group-hover:text-accent transition-colors mb-1">{s.title}</h3>
                             <p className="text-sm text-muted-foreground line-clamp-1">{s.excerpt}</p>
                           </div>
-                          {s.cover_image_url && <img src={s.cover_image_url} alt="" className="w-20 h-20 rounded-md object-cover" />}
+                          {s.cover_image_url && (
+                            <img src={s.cover_image_url} alt="" className="w-20 h-20 rounded-md object-cover" />
+                          )}
                         </div>
                       </div>
                     </Link>
@@ -205,7 +208,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Sidebar */}
+          {/* SIDEBAR: Widgets laterais */}
           <div className="space-y-6">
             <TrendingWidget items={trending} />
             <NewsletterWidget />
