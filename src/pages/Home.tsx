@@ -48,7 +48,7 @@ export default function Home() {
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug)")
-        .eq("published", true)
+        .eq("status", "published")
         .order("published_at", { ascending: false })
         .limit(3);
       setVideos((vidData ?? []) as any);

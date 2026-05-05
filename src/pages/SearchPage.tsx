@@ -31,7 +31,7 @@ export default function SearchPage() {
       .from("videos")
       .select("id, title, description, slug, category:categories(name)")
       .ilike("title", `%${searchTerm}%`)
-      .eq("published", true);
+      .eq("status", "published");
 
     // Junta os dois resultados e marca quem é o quê
     const combined = [
