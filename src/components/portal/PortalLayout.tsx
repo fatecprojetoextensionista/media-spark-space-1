@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
-import logoImg from "@/src/assets/logo.png";
-import logoSymbolWhite from "@/src/assets/logo-symbol-white.png";
+import logoImg from "src/assets/logo.png";
+import logoSymbolWhite from "src/assets/logo-symbol-white.png";
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
