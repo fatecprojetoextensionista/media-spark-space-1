@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
 import logoImg from "@/assets/logo.png";
+import logoSymbolWhite from "@/assets/logo-symbol-white.png";
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
@@ -46,12 +47,8 @@ export function PortalLayout() {
       <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center gap-3">
-              <img src={logoImg} alt="Portal" className="w-10 h-10 object-contain" />
-              <div>
-                <div className="text-xl font-serif font-bold text-foreground tracking-tight">PORTAL</div>
-                <div className="text-[10px] text-muted-foreground tracking-widest uppercase">Institucional</div>
-              </div>
+            <Link to="/" className="flex items-center">
+              <img src={logoImg} alt="TechIn" className="h-10 w-auto object-contain" />
             </Link>
 
             {/* Desktop Nav: Links dinâmicos com feedback visual */}
@@ -128,8 +125,8 @@ export function PortalLayout() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src={logoImg} alt="Portal" className="w-8 h-8 object-contain brightness-200" />
-                <span className="font-serif font-bold text-lg">PORTAL</span>
+                <img src={logoSymbolWhite} alt="TechIn" className="h-10 w-auto object-contain" />
+                <span className="font-serif font-bold text-lg">TechIn</span>
               </div>
               <p className="text-sm text-primary-foreground/70">
                 Portal institucional para divulgação de notícias, artigos, vídeos e recursos.
