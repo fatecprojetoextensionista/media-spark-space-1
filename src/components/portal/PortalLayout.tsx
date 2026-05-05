@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
@@ -19,6 +20,7 @@ export function PortalLayout() {
   // UX: Função para destacar o link ativo no menu
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
+    // Normalizamos para minúsculas para evitar erros de case-sensitivity
     return location.pathname.toLowerCase().startsWith(path.toLowerCase());
   };
 
@@ -29,8 +31,8 @@ export function PortalLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center text-primary-foreground/80 text-xs py-2">
             <div className="flex gap-4">
-              <span>📧Av. Francisco Pignatari, 650 - Vila Gustavo Correia, Carapicuíba - SP, 06310-390</span>
-              <span className="hidden sm:inline">📞 (11) 4185-6600</span>
+              <span>📧 contato@portal.org</span>
+              <span className="hidden sm:inline">📞 +55 11 0000-0000</span>
             </div>
             <div className="flex gap-4">
               <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link>
@@ -45,7 +47,6 @@ export function PortalLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center gap-3">
-              {/* Logo nova (3.png) com o tamanho antigo */}
               <img src={logoImg} alt="Portal" className="w-10 h-10 object-contain" />
               <div>
                 <div className="text-xl font-serif font-bold text-foreground tracking-tight">PORTAL</div>
@@ -53,7 +54,7 @@ export function PortalLayout() {
               </div>
             </Link>
 
-            {/* Desktop Nav */}
+            {/* Desktop Nav: Links dinâmicos com feedback visual */}
             <nav className="hidden lg:flex items-center gap-1">
               <Link
                 to="/"
@@ -103,6 +104,16 @@ export function PortalLayout() {
               </button>
             </div>
           </div>
+
+          {/* Mobile Nav */}
+          {mobileMenuOpen && (
+            <nav className="lg:hidden pb-4 space-y-1 animate-fade-in border-t border-border mt-2 pt-2">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Início</Link>
+              {categories.map((cat) => (
+                <Link key={cat.name} to={cat.path} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">{cat.name}</Link>
+              ))}
+            </nav>
+          )}
         </div>
       </header>
 
@@ -111,7 +122,7 @@ export function PortalLayout() {
         <Outlet />
       </main>
 
-      {/* Footer */}
+      {/* Footer: Mantendo a consistência dos links */}
       <footer className="bg-primary text-primary-foreground mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -136,6 +147,7 @@ export function PortalLayout() {
                 ))}
               </ul>
             </div>
+            {/* ... Resto do footer permanece igual */}
           </div>
         </div>
       </footer>
