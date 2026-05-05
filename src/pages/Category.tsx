@@ -62,7 +62,7 @@ export default function Category() {
             .from("videos")
             .select("id, title, slug, thumbnail_url, published_at")
             .eq("category_id", cat.id)
-            .eq("published", true)
+            .eq("status", "published")
             .order("published_at", { ascending: false })
         ]);
 
