@@ -10,12 +10,22 @@ import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Article { id: string; title: string; slug: string; excerpt: string | null; content: string; cover_image_url: string | null; category_id: string | null; status: string; views: number; published_at: string | null; }
+interface Article { 
+  id: string; title: string; slug: string; excerpt: string | null; content: string; 
+  cover_image_url: string | null; category_id: string | null; status: string; 
+  views: number; published_at: string | null;
+  author_name_manual: string | null; // Adicionado
+  group_authors: string | null;      // Adicionado
+}
 interface Category { id: string; name: string; }
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-const empty = { title: "", slug: "", excerpt: "", content: "", cover_image_url: "", category_id: "", status: "draft" };
+// 1. Objeto vazio atualizado com os novos campos
+const empty = { 
+  title: "", slug: "", excerpt: "", content: "", cover_image_url: "", 
+  category_id: "", status: "draft", author_name_manual: "", group_authors: "" 
+};
 
 export default function AdminArticles() {
   const { user } = useAuth();
@@ -38,11 +48,15 @@ export default function AdminArticles() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  
+  // 2. Preenchimento do formulário ao clicar em editar
   const openEdit = (a: Article) => {
     setEditing(a);
     setForm({
       title: a.title, slug: a.slug, excerpt: a.excerpt ?? "", content: a.content,
       cover_image_url: a.cover_image_url ?? "", category_id: a.category_id ?? "", status: a.status,
+      author_name_manual: a.author_name_manual ?? "",
+      group_authors: a.group_authors ?? "",
     });
     setOpen(true);
   };
@@ -68,6 +82,8 @@ export default function AdminArticles() {
       category_id: form.category_id || null,
       status: form.status,
       author_id: user?.id,
+      author_name_manual: form.author_name_manual || null, // Enviando para o banco
+      group_authors: form.group_authors || null,           // Enviando para o banco
       published_at: form.status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
     const { error } = editing
@@ -102,9 +118,23 @@ export default function AdminArticles() {
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} artigo</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editing ? form.slug : slugify(e.target.value) })} /></div>
+              
+              {/* 3. Inclusão dos campos visuais de autores */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Nome do Autor (Manual)</Label>
+                  <Input value={form.author_name_manual} onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} placeholder="Ex: João Silva" />
+                </div>
+                <div>
+                  <Label>Grupo de Autores / Equipe</Label>
+                  <Input value={form.group_authors} onChange={(e) => setForm({ ...form, group_authors: e.target.value })} placeholder="Ex: Equipe TechIn" />
+                </div>
+              </div>
+
               <div><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
               <div><Label>Conteúdo (Markdown ou HTML)</Label><Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} /></div>
+              
               <div>
                 <Label>Imagem de capa</Label>
                 <div className="flex gap-2 items-center">
@@ -118,6 +148,7 @@ export default function AdminArticles() {
                 </div>
                 {form.cover_image_url && <img src={form.cover_image_url} alt="" className="mt-2 h-24 rounded object-cover" />}
               </div>
+              
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Categoria</Label>
@@ -142,6 +173,8 @@ export default function AdminArticles() {
           </DialogContent>
         </Dialog>
       </div>
+      
+      {/* Tabela... (mantida igual) */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted">
