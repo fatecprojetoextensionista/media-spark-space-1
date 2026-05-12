@@ -18,7 +18,7 @@ interface ArticleRow {
 interface VideoRow {
   id: string;
   title: string;
-  slug: string;
+  slug: string; // Garantindo que o slug está na interface
   description: string | null;
   thumbnail_url: string | null;
   published_at: string | null;
@@ -36,7 +36,7 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Busca de Artigos (Apenas Publicados)
+      // 1. Busca de Artigos
       const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
@@ -45,16 +45,16 @@ export default function Home() {
         .limit(20);
       setArticles((artData ?? []) as any);
 
-      // 2. Busca de Vídeos (Apenas Publicados)
+      // 2. Busca de Vídeos (Certificando que o slug vem na busca)
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug), status")
-        .eq("status", "published") // Filtro essencial para ocultar rascunhos
+        .eq("status", "published")
         .order("published_at", { ascending: false })
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 3. Busca de Categorias e contagem correta (Apenas Publicados)
+      // 3. Busca de Categorias
       const { data: cats } = await supabase.from("categories").select("id, name, slug");
       if (cats) {
         const counts = await Promise.all(
@@ -142,7 +142,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* SEÇÃO 2: VÍDEOS */}
+            {/* SEÇÃO 2: VÍDEOS (AJUSTADA PARA USAR SLUG) */}
             {videos.length > 0 && (
               <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
@@ -151,7 +151,8 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {videos.map((v) => (
-                    <Link key={v.id} to={`/video/${v.id}`} className="group block">
+                    /* MUDANÇA AQUI: de v.id para v.slug */
+                    <Link key={v.id} to={`/video/${v.slug}`} className="group block">
                       <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                         <div className="relative aspect-video">
                           <img 
