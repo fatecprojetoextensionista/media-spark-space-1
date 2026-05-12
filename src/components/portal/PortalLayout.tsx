@@ -48,7 +48,8 @@ export function PortalLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
-              <img src={logoImg} alt="TechIn" className="h-10 w-auto object-contain" />
+              {/* Logótipo Principal da Navegação */}
+              <img src={logoImg} alt="Logótipo do Portal" className="h-10 w-auto object-contain" />
             </Link>
 
             {/* Desktop Nav: Links dinâmicos com feedback visual */}
@@ -119,14 +120,14 @@ export function PortalLayout() {
         <Outlet />
       </main>
 
-      {/* Footer: Mantendo a consistência dos links */}
+      {/* Footer */}
       <footer className="bg-primary text-primary-foreground mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src={logoSymbolWhite} alt="TechIn" className="h-10 w-auto object-contain" />
-                <span className="font-serif font-bold text-lg">TechIn</span>
+                {/* Símbolo Branco no Footer */}
+                <img src={logoSymbolWhite} alt="Símbolo do Portal" className="h-10 w-auto object-contain" />
               </div>
               <p className="text-sm text-primary-foreground/70">
                 Portal institucional para divulgação de notícias, artigos, vídeos e recursos.
@@ -144,7 +145,6 @@ export function PortalLayout() {
                 ))}
               </ul>
             </div>
-            {/* ... Resto do footer permanece igual */}
           </div>
         </div>
       </footer>
