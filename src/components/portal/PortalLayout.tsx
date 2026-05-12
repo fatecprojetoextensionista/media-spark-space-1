@@ -48,7 +48,7 @@ export function PortalLayout() {
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
               {/* Logótipo Principal da Navegação */}
-              <img src={logoImg} alt="Logótipo do Portal" className="h-10 w-auto object-contain" />
+              <img src={logoImg} alt="TechIn Logo" className="h-10 w-auto object-contain" />
             </Link>
 
             {/* Desktop Nav: Links dinâmicos com feedback visual */}
