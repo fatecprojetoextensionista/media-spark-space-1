@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Pencil, Plus, Upload, Copy, Check, Image as ImageIcon } from "lucide-react";
+import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -34,9 +34,6 @@ export default function AdminArticles() {
   const [editing, setEditing] = useState<Article | null>(null);
   const [form, setForm] = useState(empty);
   const [uploading, setUploading] = useState(false);
-  
-  // Lista de imagens enviadas nesta sessão para não "perder" o link antes de salvar
-  const [sessionImages, setSessionImages] = useState<string[]>([]);
 
   const load = async () => {
     const [a, c] = await Promise.all([
@@ -49,12 +46,7 @@ export default function AdminArticles() {
 
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { 
-    setEditing(null); 
-    setForm(empty); 
-    setSessionImages([]); 
-    setOpen(true); 
-  };
+  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   
   const openEdit = (a: Article) => {
     setEditing(a);
@@ -64,11 +56,10 @@ export default function AdminArticles() {
       author_name_manual: a.author_name_manual ?? "",
       group_authors: a.group_authors ?? "",
     });
-    setSessionImages([]);
     setOpen(true);
   };
 
-  const uploadFile = async (file: File, target: 'cover' | 'extra') => {
+  const uploadFile = async (file: File) => {
     setUploading(true);
     const path = `articles/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(path, file);
@@ -80,22 +71,9 @@ export default function AdminArticles() {
     }
 
     const { data } = supabase.storage.from("media").getPublicUrl(path);
-    
-    if (target === 'cover') {
-      setForm((f) => ({ ...f, cover_image_url: data.publicUrl }));
-      toast.success("Capa definida!");
-    } else {
-      setSessionImages(prev => [data.publicUrl, ...prev]);
-      toast.success("Imagem pronta!");
-    }
-    
+    setForm((f) => ({ ...f, cover_image_url: data.publicUrl }));
     setUploading(false);
-  };
-
-  const copyToClipboard = (url: string) => {
-    // COPIA APENAS O LINK PURO
-    navigator.clipboard.writeText(url);
-    toast.success("Link copiado! Cole no texto.");
+    toast.success("Capa atualizada");
   };
 
   const save = async () => {
@@ -118,7 +96,7 @@ export default function AdminArticles() {
       : await supabase.from("articles").insert(payload);
       
     if (error) return toast.error(error.message);
-    toast.success("Salvo com sucesso!");
+    toast.success("Artigo salvo");
     setOpen(false);
     load();
   };
@@ -154,52 +132,27 @@ export default function AdminArticles() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Nome do Autor</Label>
-                  <Input value={form.author_name_manual} onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} placeholder="Ex: João Silva" />
+                  <Input value={form.author_name_manual} onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} placeholder="Ex: Giovanna" />
                 </div>
                 <div>
                   <Label>Grupo / Equipe</Label>
-                  <Input value={form.group_authors} onChange={(e) => setForm({ ...form, group_authors: e.target.value })} placeholder="Ex: Equipe TechIn" />
+                  <Input value={form.group_authors} onChange={(e) => setForm({ ...form, group_authors: e.target.value })} placeholder="Ex: Design Digital" />
                 </div>
               </div>
 
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
 
-              {/* ÁREA DE IMAGENS EXTRAS MELHORADA */}
-              <div className="p-4 border rounded-md bg-muted/20 space-y-3">
-                <Label className="text-sm flex items-center gap-2 font-bold">
-                  <ImageIcon size={16} /> Imagens para o Conteúdo
-                </Label>
-                
-                <div className="flex gap-2">
-                  <Input type="file" accept="image/*" className="h-9 text-xs bg-background" onChange={(e) => e.target.files && uploadFile(e.target.files[0], 'extra')} />
-                </div>
-
-                {sessionImages.length > 0 && (
-                  <div className="space-y-2 mt-3">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Links gerados agora:</p>
-                    {sessionImages.map((url, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-2 p-2 bg-background border rounded-md">
-                        <span className="text-[10px] truncate flex-1">{url}</span>
-                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2" onClick={() => copyToClipboard(url)}>
-                          <Copy size={14} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
               <div>
-                <Label>Conteúdo (Markdown ou HTML)</Label>
-                <Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Cole o link aqui dentro de: ![](LINK_AQUI)" />
+                <Label>Conteúdo (HTML)</Label>
+                <Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Escreva seu artigo aqui..." />
               </div>
               
-              <div className="border-t pt-4">
-                <Label className="font-bold">Imagem de Capa (Principal)</Label>
-                <div className="flex gap-2 items-center mt-1">
-                  <Input value={form.cover_image_url} onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} placeholder="URL da capa" />
+              <div>
+                <Label>Imagem de capa</Label>
+                <div className="flex gap-2 items-center">
+                  <Input value={form.cover_image_url} onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} placeholder="URL da imagem" />
                   <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFile(e.target.files[0], 'cover')} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFile(e.target.files[0])} />
                     <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted bg-background">
                       <Upload size={14} /> {uploading ? "..." : "Upload"}
                     </span>
@@ -228,9 +181,7 @@ export default function AdminArticles() {
                 </div>
               </div>
 
-              <div className="pt-2 border-t text-[10px] text-muted-foreground italic">
-                Dica: Para imagens no texto, use: ![descrição](LINK_COPIADO)
-              </div>
+              <div><Label>Slug (URL do artigo)</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
 
               <Button onClick={save} className="w-full">Guardar Artigo</Button>
             </div>
@@ -238,7 +189,6 @@ export default function AdminArticles() {
         </Dialog>
       </div>
 
-      {/* Tabela... */}
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
