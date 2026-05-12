@@ -10,7 +10,7 @@ import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Video { id: string; title: string; slug: string; description: string | null; video_url: string; thumbnail_url: string | null; category_id: string | null; status: string; views: number; published_at: string | null; }
+interface Video { id: string; title: string; slug: string; description: string | null; video_url: string; thumbnail_url: string | null; category_id: string | null; status: string; views: number; published_at: string | null; published?: boolean; }
 interface Category { id: string; name: string; }
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -42,7 +42,7 @@ export default function AdminVideos() {
     setForm({
       title: v.title, slug: v.slug, description: v.description ?? "",
       video_url: v.video_url, thumbnail_url: v.thumbnail_url ?? "",
-      category_id: v.category_id ?? "", status: v.status,
+      category_id: v.category_id ?? "", status: v.status || (v.published ? "published" : "draft"),
     });
     setOpen(true);
   };
@@ -56,10 +56,12 @@ export default function AdminVideos() {
     const { data } = supabase.storage.from("media").getPublicUrl(path);
     setForm((f) => ({ ...f, [field]: data.publicUrl }));
     setUploadingField(null);
-    toast.success("Carregado");
+    toast.success("Ficheiro carregado com sucesso!");
   };
 
   const save = async () => {
+    const isPublished = form.status === "published";
+    
     const payload: any = {
       title: form.title,
       slug: form.slug || slugify(form.title),
@@ -68,23 +70,27 @@ export default function AdminVideos() {
       thumbnail_url: form.thumbnail_url || null,
       category_id: form.category_id || null,
       status: form.status,
+      published: isPublished, // Sincroniza a coluna booleana para o Portal
       author_id: user?.id,
-      published_at: form.status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
+      published_at: isPublished ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
+
     const { error } = editing
       ? await supabase.from("videos").update(payload).eq("id", editing.id)
       : await supabase.from("videos").insert(payload);
+
     if (error) return toast.error(error.message);
-    toast.success("Guardado");
+    
+    toast.success("Alterações guardadas!");
     setOpen(false);
-    load();
+    await load(); // Recarrega a tabela imediatamente
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Apagar vídeo?")) return;
+    if (!confirm("Apagar vídeo permanentemente?")) return;
     const { error } = await supabase.from("videos").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Apagado");
+    toast.success("Vídeo removido");
     load();
   };
 
@@ -92,12 +98,14 @@ export default function AdminVideos() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold">Vídeos</h1>
-          <p className="text-muted-foreground text-sm">Carregue vídeos ou cole URLs (YouTube, Vimeo)</p>
+          <h1 className="text-2xl font-serif font-bold uppercase tracking-tighter">Vídeos</h1>
+          <p className="text-muted-foreground text-sm">Gerencie o conteúdo de vídeo do portal</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNew}><Plus size={16} className="mr-2" />Novo vídeo</Button>
+            <Button onClick={openNew} className="bg-primary hover:opacity-90">
+              <Plus size={16} className="mr-2" />Novo vídeo
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} vídeo</DialogTitle></DialogHeader>
@@ -108,38 +116,38 @@ export default function AdminVideos() {
               <div>
                 <Label>URL do vídeo</Label>
                 <div className="flex gap-2 items-center">
-                  <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="URL externa ou carregue ficheiro" />
+                  <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="URL do YouTube ou carregue ficheiro" />
                   <label className="cursor-pointer">
                     <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "video_url")} />
-                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted">
+                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors">
                       <Upload size={14} />{uploadingField === "video_url" ? "..." : "Upload"}
                     </span>
                   </label>
                 </div>
               </div>
               <div>
-                <Label>Thumbnail</Label>
+                <Label>Thumbnail (Capa)</Label>
                 <div className="flex gap-2 items-center">
-                  <Input value={form.thumbnail_url} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="URL ou ficheiro" />
+                  <Input value={form.thumbnail_url} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="URL da imagem ou carregue ficheiro" />
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "thumbnail_url")} />
-                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted">
+                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors">
                       <Upload size={14} />{uploadingField === "thumbnail_url" ? "..." : "Upload"}
                     </span>
                   </label>
                 </div>
-                {form.thumbnail_url && <img src={form.thumbnail_url} alt="" className="mt-2 h-24 rounded object-cover" />}
+                {form.thumbnail_url && <img src={form.thumbnail_url} alt="Preview" className="mt-2 h-32 rounded-lg border border-border object-cover" />}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Categoria</Label>
                   <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Selecionar categoria" /></SelectTrigger>
                     <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Estado</Label>
+                  <Label>Estado de Publicação</Label>
                   <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -149,34 +157,49 @@ export default function AdminVideos() {
                   </Select>
                 </div>
               </div>
-              <Button onClick={save} className="w-full">Guardar</Button>
+              <Button onClick={save} className="w-full bg-primary text-primary-foreground h-12">Guardar Alterações</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+
+      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-muted">
+          <thead className="bg-muted/50">
             <tr>
-              <th className="text-left p-3">Título</th>
-              <th className="text-left p-3">Estado</th>
-              <th className="text-left p-3">Views</th>
-              <th className="w-24"></th>
+              <th className="text-left p-4 font-semibold">Título</th>
+              <th className="text-left p-4 font-semibold">Estado</th>
+              <th className="text-left p-4 font-semibold">Views</th>
+              <th className="w-24 p-4">Ações</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {items.map((v) => (
-              <tr key={v.id} className="border-t border-border">
-                <td className="p-3 font-medium">{v.title}</td>
-                <td className="p-3"><span className={`px-2 py-0.5 rounded text-xs ${v.status === "published" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"}`}>{v.status}</span></td>
-                <td className="p-3 text-muted-foreground">{v.views}</td>
-                <td className="p-3 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(v)}><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(v.id)}><Trash2 size={14} /></Button>
+              <tr key={v.id} className="hover:bg-muted/30 transition-colors">
+                <td className="p-4 font-medium">{v.title}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+                    v.status === "published" || v.published 
+                    ? "bg-green-100 text-green-700 border border-green-200" 
+                    : "bg-amber-100 text-amber-700 border border-amber-200"
+                  }`}>
+                    {v.status === "published" || v.published ? "Publicado" : "Rascunho"}
+                  </span>
+                </td>
+                <td className="p-4 text-muted-foreground">{v.views || 0}</td>
+                <td className="p-4 flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="hover:text-primary"><Pencil size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(v.id)} className="hover:text-destructive"><Trash2 size={14} /></Button>
                 </td>
               </tr>
             ))}
-            {items.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">Sem vídeos</td></tr>}
+            {items.length === 0 && (
+              <tr>
+                <td colSpan={4} className="p-10 text-center text-muted-foreground italic">
+                  Nenhum vídeo encontrado. Comece criando um novo!
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
