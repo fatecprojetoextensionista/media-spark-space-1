@@ -1,10 +1,9 @@
-import ReactMarkdown from 'react-markdown';
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Article() {
-  const { id } = useParams();
+  const { id } = useParams(); // O Lovable usa 'id' como nome padrão na rota
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,7 +15,7 @@ export default function Article() {
       const { data, error } = await supabase
         .from("articles")
         .select("*, category:categories(name, slug)")
-        .eq("slug", id)
+        .eq("slug", id) // Aqui dizemos: "Procura o texto da URL na coluna slug"
         .eq("status", "published")
         .maybeSingle();
 
@@ -50,31 +49,17 @@ export default function Article() {
           {article.category.name}
         </Link>
       )}
-      
       <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4">{article.title}</h1>
-      
-      {/* Exibição dos Autores */}
-      <div className="flex flex-col gap-1 mb-6 text-sm text-muted-foreground font-sans">
-        {(article.author_name_manual || article.group_authors) && (
-          <div className="font-medium text-foreground">
-            Por: {article.author_name_manual} {article.group_authors && `(${article.group_authors})`}
-          </div>
-        )}
-        <div>
-          {article.published_at && new Date(article.published_at).toLocaleDateString("pt-BR", { dateStyle: "long" })} · {article.views} visualizações
-        </div>
+      <div className="text-sm text-muted-foreground mb-8 font-sans">
+        {article.published_at && new Date(article.published_at).toLocaleDateString("pt-BR", { dateStyle: "long" })} · {article.views} visualizações
       </div>
-
       {article.cover_image_url && (
         <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8 shadow-md" />
       )}
-
-      {/* Renderização do Conteúdo com Markdown (Resolve o problema das imagens) */}
-      <div className="prose prose-lg max-w-none font-sans dark:prose-invert">
-        <ReactMarkdown>
-          {article.content}
-        </ReactMarkdown>
-      </div>
+      <div 
+        className="prose prose-lg max-w-none whitespace-pre-wrap font-sans" 
+        dangerouslySetInnerHTML={{ __html: article.content }} 
+      />
     </article>
   );
 }
