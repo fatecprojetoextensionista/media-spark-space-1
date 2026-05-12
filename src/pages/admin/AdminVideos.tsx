@@ -10,11 +10,24 @@ import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Video { id: string; title: string; slug: string; description: string | null; video_url: string; thumbnail_url: string | null; category_id: string | null; status: string; views: number; published_at: string | null; published?: boolean; }
+// 1. Interface atualizada com os novos campos
+interface Video { 
+  id: string; title: string; slug: string; description: string | null; 
+  video_url: string; thumbnail_url: string | null; category_id: string | null; 
+  status: string; views: number; published_at: string | null; published?: boolean;
+  author_name_manual: string | null;
+  group_authors: string | null;
+}
+
 interface Category { id: string; name: string; }
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-const empty = { title: "", slug: "", description: "", video_url: "", thumbnail_url: "", category_id: "", status: "draft" };
+
+// 2. Estado inicial atualizado
+const empty = { 
+  title: "", slug: "", description: "", video_url: "", thumbnail_url: "", 
+  category_id: "", status: "draft", author_name_manual: "", group_authors: "" 
+};
 
 export default function AdminVideos() {
   const { user } = useAuth();
@@ -37,12 +50,16 @@ export default function AdminVideos() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+
   const openEdit = (v: Video) => {
     setEditing(v);
     setForm({
       title: v.title, slug: v.slug, description: v.description ?? "",
       video_url: v.video_url, thumbnail_url: v.thumbnail_url ?? "",
-      category_id: v.category_id ?? "", status: v.status || (v.published ? "published" : "draft"),
+      category_id: v.category_id ?? "", 
+      status: v.status || (v.published ? "published" : "draft"),
+      author_name_manual: v.author_name_manual ?? "",
+      group_authors: v.group_authors ?? "",
     });
     setOpen(true);
   };
@@ -70,8 +87,10 @@ export default function AdminVideos() {
       thumbnail_url: form.thumbnail_url || null,
       category_id: form.category_id || null,
       status: form.status,
-      published: isPublished, // Sincroniza a coluna booleana para o Portal
+      published: isPublished,
       author_id: user?.id,
+      author_name_manual: form.author_name_manual || null,
+      group_authors: form.group_authors || null,
       published_at: isPublished ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
 
@@ -83,7 +102,7 @@ export default function AdminVideos() {
     
     toast.success("Alterações guardadas!");
     setOpen(false);
-    await load(); // Recarrega a tabela imediatamente
+    await load();
   };
 
   const remove = async (id: string) => {
@@ -111,8 +130,35 @@ export default function AdminVideos() {
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} vídeo</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editing ? form.slug : slugify(e.target.value) })} /></div>
+              
+              {/* 3. Novos campos de Autor e Grupo adicionados aqui */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Nome do Autor</Label>
+                  <Input 
+                    value={form.author_name_manual} 
+                    onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} 
+                    placeholder="Ex: Giovanna" 
+                  />
+                </div>
+                <div>
+                  <Label>Grupo / Equipe</Label>
+                  <Input 
+                    value={form.group_authors} 
+                    onChange={(e) => setForm({ ...form, group_authors: e.target.value })} 
+                    placeholder="Ex: Design Digital" 
+                  />
+                </div>
+              </div>
+
               <div><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
-              <div><Label>Descrição</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+              
+              {/* Placeholder atualizado para indicar que é a descrição/resumo */}
+              <div>
+                <Label>Descrição / Resumo</Label>
+                <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Escreva um breve resumo do vídeo..." />
+              </div>
+
               <div>
                 <Label>URL do vídeo</Label>
                 <div className="flex gap-2 items-center">
@@ -125,6 +171,7 @@ export default function AdminVideos() {
                   </label>
                 </div>
               </div>
+
               <div>
                 <Label>Thumbnail (Capa)</Label>
                 <div className="flex gap-2 items-center">
@@ -138,6 +185,7 @@ export default function AdminVideos() {
                 </div>
                 {form.thumbnail_url && <img src={form.thumbnail_url} alt="Preview" className="mt-2 h-32 rounded-lg border border-border object-cover" />}
               </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Categoria</Label>
@@ -163,6 +211,7 @@ export default function AdminVideos() {
         </Dialog>
       </div>
 
+      {/* Tabela de listagem permanece igual */}
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
