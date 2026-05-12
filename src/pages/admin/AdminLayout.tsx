@@ -3,6 +3,9 @@ import { LayoutDashboard, FileText, Video, FolderTree, LogOut, Home } from "luci
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
+// Importando a imagem do logótipo para o painel administrativo
+import logoImg from "@/assets/logo.png";
+
 const links = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
   { to: "/admin/articles", label: "Artigos", icon: FileText },
@@ -12,12 +15,16 @@ const links = [
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
+  
   return (
     <div className="min-h-screen flex bg-muted/30">
       <aside className="w-60 bg-card border-r border-border flex flex-col">
         <div className="p-5 border-b border-border">
-          <Link to="/" className="font-serif font-bold text-lg text-primary">PORTAL</Link>
-          <p className="text-xs text-muted-foreground">Admin</p>
+          {/* Trocado o texto "PORTAL" pelo logótipo */}
+          <Link to="/" className="flex items-center mb-1">
+            <img src={logoImg} alt="Logótipo do Portal" className="h-8 w-auto object-contain" />
+          </Link>
+          <p className="text-xs text-muted-foreground mt-2">Admin</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {links.map(({ to, label, icon: Icon, end }) => (
