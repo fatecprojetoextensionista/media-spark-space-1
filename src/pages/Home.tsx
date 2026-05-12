@@ -99,7 +99,7 @@ export default function Home() {
               DESTAQUE
             </div>
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary-foreground mb-2 max-w-2xl">
-              {featured?.title || "Bem-vindo ao Portal Institucional"}
+              {featured?.title || "Bem-vindo ao Portal Institucional TechIn"}
             </h1>
             {featured && (
               <Link to={`/artigo/${featured.slug}`} className="inline-flex px-5 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
