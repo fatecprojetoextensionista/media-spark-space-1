@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Video() {
-  const { id } = useParams(); // 'id' aqui representa o slug na URL
+  const { id } = useParams(); // Na rota, este 'id' agora receberá o slug
   const [video, setVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -12,19 +12,22 @@ export default function Video() {
       if (!id) return;
       setLoading(true);
       
+      // BUSCA PELO SLUG
       const { data, error } = await supabase
         .from("videos")
         .select("*, category:categories(name)")
-        .eq("slug", id) // Busca pelo slug para URLs amigáveis
-        .single();
+        .eq("slug", id) 
+        .maybeSingle(); // maybeSingle é mais seguro que single() para evitar crashes
       
       if (!error && data) {
         setVideo(data);
-        // Atualiza contagem de visualizações
+        // Atualiza contagem de visualizações usando o ID real interno
         await supabase
           .from("videos")
           .update({ views: (data.views ?? 0) + 1 })
           .eq("id", data.id);
+      } else {
+        console.error("Vídeo não encontrado para o slug:", id);
       }
       setLoading(false);
     }
@@ -33,30 +36,35 @@ export default function Video() {
 
   const getEmbedUrl = (url: string) => {
     if (!url) return "";
-    if (url.includes("youtube.com/watch?v=")) {
-      return url.replace("watch?v=", "embed/");
+    try {
+      if (url.includes("youtube.com/watch?v=")) {
+        const videoId = new URL(url).searchParams.get("v");
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      if (url.includes("youtu.be/")) {
+        const videoId = url.split('/').pop()?.split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      return url;
+    } catch (e) {
+      return url;
     }
-    if (url.includes("youtu.be/")) {
-      const videoId = url.split('/').pop();
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    return url;
   };
 
   if (loading) return <div className="p-20 text-center font-serif">Carregando vídeo...</div>;
   
   if (!video) return (
     <div className="p-20 text-center font-serif">
-      <h2 className="text-2xl mb-4">Vídeo não encontrado</h2>
+      <h2 className="text-2xl mb-4 font-bold">Vídeo não encontrado</h2>
+      <p className="mb-6 text-muted-foreground">O endereço "<strong>{id}</strong>" não corresponde a nenhum vídeo publicado.</p>
       <Link to="/" className="text-accent underline">Voltar ao início</Link>
     </div>
   );
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 font-sans">
-      <Link to="/" className="text-accent hover:underline mb-6 inline-block">← Voltar para o início</Link>
+      <Link to="/" className="text-accent hover:underline mb-6 inline-block font-medium">← Voltar para o início</Link>
       
-      {/* 1. CATEGORIA E TÍTULO */}
       <div className="mb-4">
         <span className="px-3 py-1 bg-accent/10 text-accent text-xs font-bold rounded-full uppercase tracking-wider">
           {video.category?.name || "Vídeo"}
@@ -64,7 +72,6 @@ export default function Video() {
         <h1 className="text-4xl md:text-5xl font-serif font-bold mt-4 leading-tight">{video.title}</h1>
       </div>
 
-      {/* 2. AUTORES E INFORMAÇÕES (Igual ao artigo) */}
       <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground mb-8 border-y py-4 italic">
         {(video.author_name_manual || video.group_authors) && (
           <span className="font-semibold text-foreground not-italic">
@@ -79,7 +86,6 @@ export default function Video() {
         <span>{video.views || 0} visualizações</span>
       </div>
 
-      {/* 3. RESUMO (Pega os primeiros 250 caracteres da descrição) */}
       {video.description && (
         <div className="mb-10">
           <p className="text-xl text-muted-foreground italic leading-relaxed border-l-4 border-accent/30 pl-4">
@@ -88,9 +94,8 @@ export default function Video() {
         </div>
       )}
 
-      {/* 4. O VÍDEO (No centro) */}
       <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-10 border border-border">
-        {video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be') ? (
+        {(video.video_url?.includes('youtube.com') || video.video_url?.includes('youtu.be')) ? (
           <iframe
             src={getEmbedUrl(video.video_url)}
             className="w-full h-full"
@@ -102,7 +107,6 @@ export default function Video() {
         )}
       </div>
 
-      {/* 5. TEXTO / DESCRIÇÃO COMPLETA */}
       <div className="prose prose-lg max-w-none">
         <h3 className="text-xl font-bold mb-4">Sobre este vídeo</h3>
         <p className="text-slate-800 leading-loose whitespace-pre-wrap">
