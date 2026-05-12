@@ -36,7 +36,6 @@ export function PortalLayout() {
               <span className="hidden sm:inline"></span>
             </div>
             <div className="flex gap-4">
-              /* <Link to="/sobre" className="hover:text-primary-foreground transition-colors">Sobre</Link> */
               <Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
             </div>
           </div>
