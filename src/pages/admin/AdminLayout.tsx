@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 // Importando a imagem do logótipo para o painel administrativo
-import logoImg from "@/assets/logo-C7WwK5gX.png";
+import logoImg1 from "@/assets/logo-C7WwK5gX.png";
 
 const links = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
@@ -22,7 +22,7 @@ export default function AdminLayout() {
         <div className="p-5 border-b border-border">
           {/* Trocado o texto "PORTAL" pelo logótipo */}
           <Link to="/" className="flex items-center mb-1">
-            <img src={logoImg} alt="Logótipo do Portal" className="h-8 w-auto object-contain" />
+            <img src={logoImg1} alt="Logótipo do Portal" className="h-8 w-auto object-contain" />
           </Link>
           <p className="text-xs text-muted-foreground mt-2">Admin</p>
         </div>
