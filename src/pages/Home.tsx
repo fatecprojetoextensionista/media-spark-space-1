@@ -23,6 +23,7 @@ interface VideoRow {
   thumbnail_url: string | null;
   published_at: string | null;
   category: { name: string; slug: string } | null;
+  status: string;
 }
 
 const formatDate = (d: string | null) =>
@@ -34,8 +35,8 @@ export default function Home() {
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
-    (async () => {
-      // 1. Busca de Artigos
+    const loadData = async () => {
+      // 1. Busca de Artigos (Apenas Publicados)
       const { data: artData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
@@ -44,16 +45,16 @@ export default function Home() {
         .limit(20);
       setArticles((artData ?? []) as any);
 
-      // 2. Busca de Vídeos
+      // 2. Busca de Vídeos (Apenas Publicados)
       const { data: vidData } = await supabase
         .from("videos")
-        .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug)")
-        .eq("status", "published")
+        .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug), status")
+        .eq("status", "published") // Filtro essencial para ocultar rascunhos
         .order("published_at", { ascending: false })
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 3. Busca de Categorias e contagem correta
+      // 3. Busca de Categorias e contagem correta (Apenas Publicados)
       const { data: cats } = await supabase.from("categories").select("id, name, slug");
       if (cats) {
         const counts = await Promise.all(
@@ -62,13 +63,15 @@ export default function Home() {
               .from("articles")
               .select("*", { count: "exact", head: true })
               .eq("status", "published")
-              .eq("category_id", c.id); // Agora filtra por categoria de verdade!
+              .eq("category_id", c.id);
             return { name: c.name, count: count ?? 0 };
           }),
         );
         setCategories(counts);
       }
-    })();
+    };
+
+    loadData();
   }, []);
 
   const featured = articles[0];
@@ -139,7 +142,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* SEÇÃO 2: VÍDEOS - CORRIGIDA */}
+            {/* SEÇÃO 2: VÍDEOS */}
             {videos.length > 0 && (
               <div className="pt-4">
                 <div className="flex items-center gap-4 mb-6">
@@ -148,7 +151,6 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {videos.map((v) => (
-                    /* MUDANÇA AQUI: Trocamos v.slug por v.id para evitar o erro 404 */
                     <Link key={v.id} to={`/video/${v.id}`} className="group block">
                       <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                         <div className="relative aspect-video">
