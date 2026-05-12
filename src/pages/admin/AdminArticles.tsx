@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Pencil, Plus, Upload, Copy, Check } from "lucide-react";
+import { Trash2, Pencil, Plus, Upload, Copy, Check, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -34,7 +34,9 @@ export default function AdminArticles() {
   const [editing, setEditing] = useState<Article | null>(null);
   const [form, setForm] = useState(empty);
   const [uploading, setUploading] = useState(false);
-  const [lastUploadedUrl, setLastUploadedUrl] = useState("");
+  
+  // Lista de imagens enviadas nesta sessão para não "perder" o link antes de salvar
+  const [sessionImages, setSessionImages] = useState<string[]>([]);
 
   const load = async () => {
     const [a, c] = await Promise.all([
@@ -47,7 +49,12 @@ export default function AdminArticles() {
 
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setLastUploadedUrl(""); setOpen(true); };
+  const openNew = () => { 
+    setEditing(null); 
+    setForm(empty); 
+    setSessionImages([]); 
+    setOpen(true); 
+  };
   
   const openEdit = (a: Article) => {
     setEditing(a);
@@ -57,6 +64,7 @@ export default function AdminArticles() {
       author_name_manual: a.author_name_manual ?? "",
       group_authors: a.group_authors ?? "",
     });
+    setSessionImages([]);
     setOpen(true);
   };
 
@@ -75,18 +83,19 @@ export default function AdminArticles() {
     
     if (target === 'cover') {
       setForm((f) => ({ ...f, cover_image_url: data.publicUrl }));
-      toast.success("Capa atualizada");
+      toast.success("Capa definida!");
     } else {
-      setLastUploadedUrl(data.publicUrl);
-      toast.success("Imagem pronta para o texto!");
+      setSessionImages(prev => [data.publicUrl, ...prev]);
+      toast.success("Imagem pronta!");
     }
     
     setUploading(false);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Link copiado! Use ![texto](" + text + ") no conteúdo.");
+  const copyToClipboard = (url: string) => {
+    // COPIA APENAS O LINK PURO
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado! Cole no texto.");
   };
 
   const save = async () => {
@@ -109,7 +118,7 @@ export default function AdminArticles() {
       : await supabase.from("articles").insert(payload);
       
     if (error) return toast.error(error.message);
-    toast.success("Artigo guardado com sucesso");
+    toast.success("Salvo com sucesso!");
     setOpen(false);
     load();
   };
@@ -155,39 +164,48 @@ export default function AdminArticles() {
 
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
 
-              {/* UPLOAD DE IMAGENS EXTRAS PARA O CORPO DO TEXTO */}
-              <div className="p-3 border rounded-md bg-muted/30 space-y-2">
-                <Label className="text-xs flex items-center gap-2">
-                  <Upload size={12} /> Upload de imagens para o meio do texto
+              {/* ÁREA DE IMAGENS EXTRAS MELHORADA */}
+              <div className="p-4 border rounded-md bg-muted/20 space-y-3">
+                <Label className="text-sm flex items-center gap-2 font-bold">
+                  <ImageIcon size={16} /> Imagens para o Conteúdo
                 </Label>
+                
                 <div className="flex gap-2">
-                  <Input type="file" accept="image/*" className="h-9 text-xs" onChange={(e) => e.target.files && uploadFile(e.target.files[0], 'extra')} />
-                  {lastUploadedUrl && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => copyToClipboard(lastUploadedUrl)}>
-                      <Copy size={14} className="mr-1" /> Copiar Link
-                    </Button>
-                  )}
+                  <Input type="file" accept="image/*" className="h-9 text-xs bg-background" onChange={(e) => e.target.files && uploadFile(e.target.files[0], 'extra')} />
                 </div>
-                {lastUploadedUrl && <p className="text-[10px] text-green-600 font-medium italic">Imagem pronta! Copie o link e use no conteúdo abaixo.</p>}
+
+                {sessionImages.length > 0 && (
+                  <div className="space-y-2 mt-3">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Links gerados agora:</p>
+                    {sessionImages.map((url, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 p-2 bg-background border rounded-md">
+                        <span className="text-[10px] truncate flex-1">{url}</span>
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2" onClick={() => copyToClipboard(url)}>
+                          <Copy size={14} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
                 <Label>Conteúdo (Markdown ou HTML)</Label>
-                <Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Escreva aqui... Use ![desc](link) para imagens." />
+                <Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Cole o link aqui dentro de: ![](LINK_AQUI)" />
               </div>
               
-              <div>
-                <Label>Imagem de capa</Label>
-                <div className="flex gap-2 items-center">
+              <div className="border-t pt-4">
+                <Label className="font-bold">Imagem de Capa (Principal)</Label>
+                <div className="flex gap-2 items-center mt-1">
                   <Input value={form.cover_image_url} onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} placeholder="URL da capa" />
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFile(e.target.files[0], 'cover')} />
-                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted">
+                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted bg-background">
                       <Upload size={14} /> {uploading ? "..." : "Upload"}
                     </span>
                   </label>
                 </div>
-                {form.cover_image_url && <img src={form.cover_image_url} alt="" className="mt-2 h-24 rounded object-cover" />}
+                {form.cover_image_url && <img src={form.cover_image_url} alt="" className="mt-2 h-24 rounded object-cover border" />}
               </div>
               
               <div className="grid grid-cols-2 gap-3">
@@ -210,7 +228,9 @@ export default function AdminArticles() {
                 </div>
               </div>
 
-              <div><Label>Slug (URL do artigo)</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
+              <div className="pt-2 border-t text-[10px] text-muted-foreground italic">
+                Dica: Para imagens no texto, use: ![descrição](LINK_COPIADO)
+              </div>
 
               <Button onClick={save} className="w-full">Guardar Artigo</Button>
             </div>
@@ -218,9 +238,10 @@ export default function AdminArticles() {
         </Dialog>
       </div>
 
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+      {/* Tabela... */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-muted">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-3">Título</th>
               <th className="text-left p-3">Estado</th>
@@ -230,7 +251,7 @@ export default function AdminArticles() {
           </thead>
           <tbody>
             {items.map((a) => (
-              <tr key={a.id} className="border-t border-border">
+              <tr key={a.id} className="border-t border-border hover:bg-muted/20">
                 <td className="p-3 font-medium">{a.title}</td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded text-xs ${a.status === "published" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"}`}>
