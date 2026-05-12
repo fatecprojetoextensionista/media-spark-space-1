@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
 import logoImg from "@/assets/logo-C7WwK5gX.png";
 import logoSymbolWhite from "@/assets/logo-symbol-white.png";
+import logoImg from "@/assets/TechIn logo.png";
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
