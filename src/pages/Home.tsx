@@ -215,7 +215,7 @@ export default function Home() {
           {/* SIDEBAR */}
           <div className="space-y-6">
             <TrendingWidget items={trending} />
-            <NewsletterWidget />
+           //<NewsletterWidget />
             <CategoriesWidget categories={categories} />
           </div>
         </div>
