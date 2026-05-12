@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArticleCard } from "@/components/portal/ArticleCard";
 import { TrendingWidget, NewsletterWidget, CategoriesWidget } from "@/components/portal/SidebarWidget";
 import { supabase } from "@/integrations/supabase/client";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/Fatec.jpeg";
 
 interface ArticleRow {
   id: string;
