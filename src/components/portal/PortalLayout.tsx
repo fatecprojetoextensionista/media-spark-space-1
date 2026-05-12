@@ -130,7 +130,7 @@ export function PortalLayout() {
                 <img src={logoSymbolWhite} alt="Símbolo do Portal" className="h-10 w-auto object-contain" />
               </div>
               <p className="text-sm text-primary-foreground/70">
-                Portal institucional para divulgação de notícias, artigos, vídeos e recursos.
+                Portal institucional TechIn para divulgação de notícias, artigos, vídeos e recursos.
               </p>
             </div>
             <div>
