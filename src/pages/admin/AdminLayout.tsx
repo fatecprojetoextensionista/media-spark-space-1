@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 // Importando a imagem do logótipo para o painel administrativo
-import logoImg from "@/assets/logo.png";
+import logoImg from "@/assets/logo-C7WwK5gX.png";
 
 const links = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
