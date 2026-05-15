@@ -58,7 +58,7 @@ export default function Home() {
         .eq("status", "published")
         .order("published_at", { ascending: false })
         .range(1, 4);
-      novidades && setNovidades((novData ?? []) as any);
+      setNovidades((novData ?? []) as any);
 
       // 3. Seção: VÍDEOS (Os 3 vídeos mais recentes)
       const { data: vidData } = await supabase
@@ -109,7 +109,7 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Cria a lista de "Em Alta" com base nas novidades
+  // Cria a lista de "Em Alta" de forma segura com base nos artigos de novidades
   const trending = novidades.map((a) => ({
     id: a.slug,
     title: a.title,
@@ -132,3 +132,51 @@ export default function Home() {
               DESTAQUE
             </div>
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2 max-w-2xl">
+              {featured?.title || "Bem-vindo ao Portal Institucional TechIn"}
+            </h1>
+            {featured && (
+              <Link to={`/artigo/${featured.slug}`} className="inline-flex px-5 py-2 bg-accent text-accent-foreground rounded-md text-sm font-semibold hover:opacity-90 transition-opacity">
+                Ler mais →
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CONTEÚDO PRINCIPAL COM SIDEBAR LADO A LADO */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* COLUNA DA ESQUERDA (CONTEÚDO DO PORTAL - SEÇÕES VERTICAIS) */}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* 1. SEÇÃO: NOVIDADES */}
+            <div>
+              <div className="flex items-center gap-4 mb-6 border-b pb-2">
+                <h2 className="text-2xl font-serif font-bold text-slate-900">Novidades</h2>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {novidades.map((a) => (
+                  <ArticleCard
+                    key={a.id}
+                    id={a.slug}
+                    title={a.title}
+                    excerpt={a.excerpt ?? ""}
+                    category={a.category?.name ?? "—"}
+                    author=""
+                    date={formatDate(a.published_at)}
+                    imageUrl={a.cover_image_url ?? undefined}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 2. SEÇÃO: VÍDEOS */}
+            {videos.length > 0 && (
+              <div>
+                <div className="flex items-center gap-4 mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Vídeos em Destaque</h2>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div className="grid grid-cols-1
