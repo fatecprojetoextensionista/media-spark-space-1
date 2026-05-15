@@ -69,22 +69,22 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Seção: NOTÍCIAS (CORRIGIDO: Filtrando pelo slug da tabela 'categories')
+      // 4. Seção: NOTÍCIAS (Buscando o slug 'noticias' em minúsculo)
       const { data: notData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
         .eq("status", "published")
-        .eq("categories.slug", "noticias") // <- Correção da sintaxe aqui
+        .eq("categories.slug", "noticias")
         .order("published_at", { ascending: false })
         .limit(4);
       setNoticias((notData ?? []) as any);
 
-      // 5. Seção: TECNOLOGIA (CORRIGIDO: Filtrando pelo slug da tabela 'categories')
+      // 5. Seção: TECNOLOGIA (AJUSTADO: Buscando com o 'T' maiúsculo conforme o Supabase)
       const { data: tecData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
         .eq("status", "published")
-        .eq("categories.slug", "tecnologia") // <- Correção da sintaxe aqui
+        .eq("categories.slug", "Tecnologia") // <- Corrigido para maiúsculo
         .order("published_at", { ascending: false })
         .limit(4);
       setTecnologia((tecData ?? []) as any);
