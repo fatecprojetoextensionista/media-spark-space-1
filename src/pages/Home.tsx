@@ -39,7 +39,7 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Destaque do Banner
+      // 1. Destaque do Banner (Filtra com status exato do banco)
       const { data: featData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
@@ -51,7 +51,7 @@ export default function Home() {
         setFeatured(featData[0] as any);
       }
 
-      // 2. Seção: NOVIDADES (Os 4 artigos seguintes)
+      // 2. Seção: NOVIDADES (Os 4 seguintes com status exato do banco)
       const { data: novData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
@@ -60,7 +60,7 @@ export default function Home() {
         .range(1, 4);
       setNovidades((novData ?? []) as any);
 
-      // 3. Seção: VÍDEOS (Os 3 vídeos mais recentes)
+      // 3. Seção: VÍDEOS
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug), status")
@@ -69,7 +69,7 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Seção: NOTÍCIAS (Buscando o slug 'noticias' em minúsculo)
+      // 4. Seção: NOTÍCIAS (Corrigido para 'published' minúsculo e slug 'noticias')
       const { data: notData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
@@ -79,12 +79,12 @@ export default function Home() {
         .limit(4);
       setNoticias((notData ?? []) as any);
 
-      // 5. Seção: TECNOLOGIA (AJUSTADO: Buscando com o 'T' maiúsculo conforme o Supabase)
+      // 5. Seção: TECNOLOGIA (Corrigido para 'published' minúsculo e slug 'tecnologia')
       const { data: tecData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
         .eq("status", "published")
-        .eq("categories.slug", "Tecnologia") // <- Corrigido para maiúsculo
+        .eq("categories.slug", "tecnologia")
         .order("published_at", { ascending: false })
         .limit(4);
       setTecnologia((tecData ?? []) as any);
@@ -263,7 +263,7 @@ export default function Home() {
 
           </div>
 
-          {/* COLUNA DIREITA: SIDEBAR FIXED */}
+          {/* COLUNA DIREITA: SIDEBAR */}
           <div className="space-y-6 lg:border-l lg:pl-6 border-border h-fit">
             <TrendingWidget items={trending} />
             <CategoriesWidget categories={categories} />
