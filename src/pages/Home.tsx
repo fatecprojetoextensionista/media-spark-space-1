@@ -36,18 +36,23 @@ export default function Home() {
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [noticias, setNoticias] = useState<ArticleRow[]>([]);
   const [tecnologia, setTecnologia] = useState<ArticleRow[]>([]);
+  const [institucional, setInstitucional] = useState<ArticleRow[]>([]);
+  const [eventos, setEventos] = useState<ArticleRow[]>([]);
+  const [recursos, setRecursos] = useState<ArticleRow[]>([]);
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Busca TODAS as categorias primeiro para termos os IDs de referência de forma segura
+      // 1. Busca todas as categorias para pegar os IDs dinamicamente
       const { data: catsData } = await supabase.from("categories").select("id, name, slug");
       
-      // Mapeia os IDs para sabermos qual ID pertence a qual categoria
       const idNoticias = catsData?.find(c => c.slug.toLowerCase() === "noticias")?.id;
       const idTecnologia = catsData?.find(c => c.slug.toLowerCase() === "tecnologia")?.id;
+      const idInstitucional = catsData?.find(c => c.slug.toLowerCase() === "institucional")?.id;
+      const idEventos = catsData?.find(c => c.slug.toLowerCase() === "eventos")?.id;
+      const idRecursos = catsData?.find(c => c.slug.toLowerCase() === "recursos")?.id;
 
-      // 2. Busca TODOS os artigos publicados de uma só vez (Evita erros de junção estrita)
+      // 2. Busca todos os artigos publicados
       const { data: allArticles } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category_id, category:categories(name, slug)")
@@ -55,34 +60,23 @@ export default function Home() {
         .order("published_at", { ascending: false });
 
       if (allArticles && allArticles.length > 0) {
-        // Banner: O primeiro mais recente
         setFeatured(allArticles[0] as any);
-        
-        // Novidades: Os próximos 4 artigos
         setNovidades(allArticles.slice(1, 5) as any);
 
-        // Seção Notícias: Filtra estritamente pelo ID da categoria de notícias
-        if (idNoticias) {
-          const filtradosNoticias = allArticles.filter(a => a.category_id === idNoticias);
-          setNoticias(filtradosNoticias.slice(0, 4) as any);
-        } else {
-          // Fallback caso o relacionamento por ID falhe: tenta por texto do slug
-          const filtradosNoticias = allArticles.filter(a => a.category?.slug?.toLowerCase() === "noticias");
-          setNoticias(filtradosNoticias.slice(0, 4) as any);
-        }
+        // Separação Inteligente das Seções por ID (com fallback por texto do slug)
+        const filterCategory = (id: string | undefined, slugText: string) => {
+          if (id) return allArticles.filter(a => a.category_id === id).slice(0, 4);
+          return allArticles.filter(a => a.category?.slug?.toLowerCase() === slugText).slice(0, 4);
+        };
 
-        // Seção Tecnologia: Filtra estritamente pelo ID da categoria de tecnologia
-        if (idTecnologia) {
-          const filtradosTecnologia = allArticles.filter(a => a.category_id === idTecnologia);
-          setTecnologia(filtradosTecnologia.slice(0, 4) as any);
-        } else {
-          // Fallback caso o relacionamento por ID falhe: tenta por texto do slug
-          const filtradosTecnologia = allArticles.filter(a => a.category?.slug?.toLowerCase() === "tecnologia");
-          setTecnologia(filtradosTecnologia.slice(0, 4) as any);
-        }
+        setNoticias(filterCategory(idNoticias, "noticias") as any);
+        setTecnologia(filterCategory(idTecnologia, "tecnologia") as any);
+        setInstitucional(filterCategory(idInstitucional, "institucional") as any);
+        setEventos(filterCategory(idEventos, "eventos") as any);
+        setRecursos(filterCategory(idRecursos, "recursos") as any);
       }
 
-      // 3. Seção: VÍDEOS
+      // 3. Seção de Vídeos
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug), status")
@@ -91,7 +85,7 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Contagem para o Widget de Categorias da Lateral
+      // 4. Contador da Sidebar Lateral
       if (catsData) {
         const counts = await Promise.all(
           catsData.map(async (c) => {
@@ -143,11 +137,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* GRADE DE LAYOUT: DUAS COLUNAS PRINCIPAIS */}
+      {/* GRADE DE LAYOUT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* COLUNA ESQUERDA: TODAS AS SEÇÕES VERTICAIS */}
+          {/* COLUNA ESQUERDA VERTICAL */}
           <div className="lg:col-span-2 space-y-12">
             
             {/* 1. SEÇÃO: NOVIDADES */}
@@ -230,7 +224,7 @@ export default function Home() {
                       author=""
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
-                    />
+                  />
                   ))}
                 </div>
               </div>
@@ -253,6 +247,84 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Tecnologia"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. SEÇÃO: INSTITUCIONAL */}
+            {institucional.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Institucional</h2>
+                  <Link to="/categoria/institucional" className="text-xs font-semibold text-accent hover:underline">
+                    Ver mais →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {institucional.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name || "Institucional"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 6. SEÇÃO: EVENTOS */}
+            {eventos.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Eventos</h2>
+                  <Link to="/categoria/eventos" className="text-xs font-semibold text-accent hover:underline">
+                    Ver mais →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {eventos.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name || "Eventos"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 7. SEÇÃO: RECURSOS */}
+            {recursos.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Recursos</h2>
+                  <Link to="/categoria/recursos" className="text-xs font-semibold text-accent hover:underline">
+                    Ver mais →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {recursos.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name || "Recursos"}
                       author=""
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
