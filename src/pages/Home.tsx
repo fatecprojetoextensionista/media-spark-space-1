@@ -69,22 +69,22 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Seção: NOTÍCIAS
+      // 4. Seção: NOTÍCIAS (CORRIGIDO: Filtrando pelo slug da tabela 'categories')
       const { data: notData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
         .eq("status", "published")
-        .eq("category.slug", "noticias")
+        .eq("categories.slug", "noticias") // <- Correção da sintaxe aqui
         .order("published_at", { ascending: false })
         .limit(4);
       setNoticias((notData ?? []) as any);
 
-      // 5. Seção: TECNOLOGIA
+      // 5. Seção: TECNOLOGIA (CORRIGIDO: Filtrando pelo slug da tabela 'categories')
       const { data: tecData } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
         .eq("status", "published")
-        .eq("category.slug", "tecnologia")
+        .eq("categories.slug", "tecnologia") // <- Correção da sintaxe aqui
         .order("published_at", { ascending: false })
         .limit(4);
       setTecnologia((tecData ?? []) as any);
@@ -117,7 +117,7 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* SEÇÃO HERO BANNER (Inteiro no topo) */}
+      {/* SEÇÃO HERO BANNER */}
       <div className="relative h-[400px] overflow-hidden">
         <img
           src={featured?.cover_image_url || heroBg}
@@ -146,7 +146,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* COLUNA ESQUERDA: TODAS AS SEÇÕES DO SEU PAPEL (Ocupa 2 partes do espaço) */}
+          {/* COLUNA ESQUERDA: TODAS AS SEÇÕES VERTICAIS */}
           <div className="lg:col-span-2 space-y-12">
             
             {/* 1. SEÇÃO: NOVIDADES */}
@@ -178,7 +178,7 @@ export default function Home() {
                   <h2 className="text-2xl font-serif font-bold text-slate-900">Vídeos em Destaque</h2>
                   <div className="flex-1 h-px bg-border" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {videos.map((v) => (
                     <Link key={v.id} to={`/video/${v.slug}`} className="group block">
                       <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-md transition-all duration-300">
@@ -263,7 +263,7 @@ export default function Home() {
 
           </div>
 
-          {/* COLUNA DIREITA: SIDEBAR (Ocupa 1 parte do espaço e fica fixada na direita de tudo) */}
+          {/* COLUNA DIREITA: SIDEBAR FIXED */}
           <div className="space-y-6 lg:border-l lg:pl-6 border-border h-fit">
             <TrendingWidget items={trending} />
             <CategoriesWidget categories={categories} />
