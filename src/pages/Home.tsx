@@ -12,7 +12,8 @@ interface ArticleRow {
   excerpt: string | null;
   cover_image_url: string | null;
   published_at: string | null;
-  category: { name: string; slug: string } | null;
+  category_id: string | null;
+  category?: { name: string; slug: string } | null;
 }
 
 interface VideoRow {
@@ -39,26 +40,47 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Destaque do Banner (Filtra com status exato do banco)
-      const { data: featData } = await supabase
-        .from("articles")
-        .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
-        .eq("status", "published")
-        .order("published_at", { ascending: false })
-        .limit(1);
+      // 1. Busca TODAS as categorias primeiro para termos os IDs de referência de forma segura
+      const { data: catsData } = await supabase.from("categories").select("id, name, slug");
       
-      if (featData && featData.length > 0) {
-        setFeatured(featData[0] as any);
-      }
+      // Mapeia os IDs para sabermos qual ID pertence a qual categoria
+      const idNoticias = catsData?.find(c => c.slug.toLowerCase() === "noticias")?.id;
+      const idTecnologia = catsData?.find(c => c.slug.toLowerCase() === "tecnologia")?.id;
 
-      // 2. Seção: NOVIDADES (Os 4 seguintes com status exato do banco)
-      const { data: novData } = await supabase
+      // 2. Busca TODOS os artigos publicados de uma só vez (Evita erros de junção estrita)
+      const { data: allArticles } = await supabase
         .from("articles")
-        .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories(name, slug)")
+        .select("id, title, slug, excerpt, cover_image_url, published_at, category_id, category:categories(name, slug)")
         .eq("status", "published")
-        .order("published_at", { ascending: false })
-        .range(1, 4);
-      setNovidades((novData ?? []) as any);
+        .order("published_at", { ascending: false });
+
+      if (allArticles && allArticles.length > 0) {
+        // Banner: O primeiro mais recente
+        setFeatured(allArticles[0] as any);
+        
+        // Novidades: Os próximos 4 artigos
+        setNovidades(allArticles.slice(1, 5) as any);
+
+        // Seção Notícias: Filtra estritamente pelo ID da categoria de notícias
+        if (idNoticias) {
+          const filtradosNoticias = allArticles.filter(a => a.category_id === idNoticias);
+          setNoticias(filtradosNoticias.slice(0, 4) as any);
+        } else {
+          // Fallback caso o relacionamento por ID falhe: tenta por texto do slug
+          const filtradosNoticias = allArticles.filter(a => a.category?.slug?.toLowerCase() === "noticias");
+          setNoticias(filtradosNoticias.slice(0, 4) as any);
+        }
+
+        // Seção Tecnologia: Filtra estritamente pelo ID da categoria de tecnologia
+        if (idTecnologia) {
+          const filtradosTecnologia = allArticles.filter(a => a.category_id === idTecnologia);
+          setTecnologia(filtradosTecnologia.slice(0, 4) as any);
+        } else {
+          // Fallback caso o relacionamento por ID falhe: tenta por texto do slug
+          const filtradosTecnologia = allArticles.filter(a => a.category?.slug?.toLowerCase() === "tecnologia");
+          setTecnologia(filtradosTecnologia.slice(0, 4) as any);
+        }
+      }
 
       // 3. Seção: VÍDEOS
       const { data: vidData } = await supabase
@@ -69,31 +91,10 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Seção: NOTÍCIAS (Corrigido para 'published' minúsculo e slug 'noticias')
-      const { data: notData } = await supabase
-        .from("articles")
-        .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
-        .eq("status", "published")
-        .eq("categories.slug", "noticias")
-        .order("published_at", { ascending: false })
-        .limit(4);
-      setNoticias((notData ?? []) as any);
-
-      // 5. Seção: TECNOLOGIA (Corrigido para 'published' minúsculo e slug 'tecnologia')
-      const { data: tecData } = await supabase
-        .from("articles")
-        .select("id, title, slug, excerpt, cover_image_url, published_at, category:categories!(inner)(name, slug)")
-        .eq("status", "published")
-        .eq("categories.slug", "tecnologia")
-        .order("published_at", { ascending: false })
-        .limit(4);
-      setTecnologia((tecData ?? []) as any);
-
-      // 6. Busca de Categorias para o Widget da Sidebar
-      const { data: cats } = await supabase.from("categories").select("id, name, slug");
-      if (cats) {
+      // 4. Contagem para o Widget de Categorias da Lateral
+      if (catsData) {
         const counts = await Promise.all(
-          cats.map(async (c) => {
+          catsData.map(async (c) => {
             const { count } = await supabase
               .from("articles")
               .select("*", { count: "exact", head: true })
@@ -112,7 +113,7 @@ export default function Home() {
   const trending = novidades.map((a) => ({
     id: a.slug,
     title: a.title,
-    category: a.category?.name ?? "—",
+    category: a.category?.name || "Novidade",
   }));
 
   return (
@@ -130,7 +131,7 @@ export default function Home() {
             <div className="inline-block px-3 py-1 bg-destructive text-destructive-foreground text-xs font-bold rounded mb-3 tracking-wide">
               DESTAQUE
             </div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2 max-w-2xl">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2 max-w-2xl leading-tight">
               {featured?.title || "Bem-vindo ao Portal Institucional TechIn"}
             </h1>
             {featured && (
@@ -162,7 +163,7 @@ export default function Home() {
                     id={a.slug}
                     title={a.title}
                     excerpt={a.excerpt ?? ""}
-                    category={a.category?.name ?? "—"}
+                    category={a.category?.name || "Novidade"}
                     author=""
                     date={formatDate(a.published_at)}
                     imageUrl={a.cover_image_url ?? undefined}
@@ -225,7 +226,7 @@ export default function Home() {
                       id={a.slug}
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
-                      category={a.category?.name ?? "—"}
+                      category={a.category?.name || "Notícias"}
                       author=""
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
@@ -251,7 +252,7 @@ export default function Home() {
                       id={a.slug}
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
-                      category={a.category?.name ?? "—"}
+                      category={a.category?.name || "Tecnologia"}
                       author=""
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
