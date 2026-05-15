@@ -109,7 +109,6 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Cria a lista de "Em Alta" de forma segura com base nos artigos de novidades
   const trending = novidades.map((a) => ({
     id: a.slug,
     title: a.title,
@@ -118,7 +117,7 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* SEÇÃO HERO BANNER */}
+      {/* SEÇÃO HERO BANNER (Inteiro no topo) */}
       <div className="relative h-[400px] overflow-hidden">
         <img
           src={featured?.cover_image_url || heroBg}
@@ -143,11 +142,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL COM SIDEBAR LADO A LADO */}
+      {/* GRADE DE LAYOUT: DUAS COLUNAS PRINCIPAIS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* COLUNA DA ESQUERDA (CONTEÚDO DO PORTAL - SEÇÕES VERTICAIS) */}
+          {/* COLUNA ESQUERDA: TODAS AS SEÇÕES DO SEU PAPEL (Ocupa 2 partes do espaço) */}
           <div className="lg:col-span-2 space-y-12">
             
             {/* 1. SEÇÃO: NOVIDADES */}
@@ -156,7 +155,7 @@ export default function Home() {
                 <h2 className="text-2xl font-serif font-bold text-slate-900">Novidades</h2>
                 <div className="flex-1 h-px bg-border" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {novidades.map((a) => (
                   <ArticleCard
                     key={a.id}
@@ -179,4 +178,99 @@ export default function Home() {
                   <h2 className="text-2xl font-serif font-bold text-slate-900">Vídeos em Destaque</h2>
                   <div className="flex-1 h-px bg-border" />
                 </div>
-                <div className="grid grid-cols-1
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {videos.map((v) => (
+                    <Link key={v.id} to={`/video/${v.slug}`} className="group block">
+                      <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-md transition-all duration-300">
+                        <div className="relative aspect-video">
+                          <img 
+                            src={v.thumbnail_url || "/placeholder.svg"} 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            alt={v.title}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                            <div className="w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center shadow-lg text-xs font-bold">
+                              ▶
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <span className="text-[9px] uppercase tracking-wider text-accent font-bold">
+                            {v.category?.name || "Vídeo"}
+                          </span>
+                          <h3 className="font-semibold text-xs line-clamp-2 mt-0.5 group-hover:text-accent transition-colors leading-tight">
+                            {v.title}
+                          </h3>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. SEÇÃO: NOTÍCIAS */}
+            {noticias.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Notícias</h2>
+                  <Link to="/categoria/noticias" className="text-xs font-semibold text-accent hover:underline">
+                    Ver mais →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {noticias.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name ?? "—"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 4. SEÇÃO: TECNOLOGIA */}
+            {tecnologia.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6 border-b pb-2">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900">Tecnologia</h2>
+                  <Link to="/categoria/tecnologia" className="text-xs font-semibold text-accent hover:underline">
+                    Ver mais →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {tecnologia.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      id={a.slug}
+                      title={a.title}
+                      excerpt={a.excerpt ?? ""}
+                      category={a.category?.name ?? "—"}
+                      author=""
+                      date={formatDate(a.published_at)}
+                      imageUrl={a.cover_image_url ?? undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* COLUNA DIREITA: SIDEBAR (Ocupa 1 parte do espaço e fica fixada na direita de tudo) */}
+          <div className="space-y-6 lg:border-l lg:pl-6 border-border h-fit">
+            <TrendingWidget items={trending} />
+            <CategoriesWidget categories={categories} />
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
