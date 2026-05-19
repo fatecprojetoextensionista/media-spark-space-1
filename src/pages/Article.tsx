@@ -42,6 +42,9 @@ export default function Article() {
     </div>
   );
 
+  // Esta linha remove o bloco <style> que estava a quebrar o layout
+  const sanitizedContent = article.content ? article.content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') : '';
+
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       {article.category && (
@@ -80,7 +83,7 @@ export default function Article() {
 
       <div 
         className="prose prose-lg max-w-none whitespace-pre-wrap font-sans" 
-        dangerouslySetInnerHTML={{ __html: article.content }} 
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
       />
     </article>
   );
