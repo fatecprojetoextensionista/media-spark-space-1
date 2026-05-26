@@ -177,7 +177,7 @@ export default function Article() {
 
                 {/* NOME E LABEL */}
                 <div>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Autor</p>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Autor(es)</p>
                   <h4 className="text-lg font-bold text-foreground font-serif">
                     {article.author_name_manual}
                     {article.author_name_manual && article.group_authors && " & "}
