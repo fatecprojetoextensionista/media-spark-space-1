@@ -45,7 +45,7 @@ export default function About() {
               <CardTitle className="text-xl">Missão</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Promover a aplicação prática dos conhecimentos de design e desenvolvimento por meio de uma plataforma dinâmica, informativa e acessível para toda a comunidade.
+              Desmistificar e disseminar o conhecimento sobre tecnologias contemporâneas de forma didática, ética e acessível. Nosso compromisso é produzir conteúdos práticos e de utilidade pública que preparem estudantes, apoiem educadores e capacitem micro e pequenos empreendedores locais para os desafios e oportunidades do futuro digital.  
             </CardContent>
           </Card>
 
