@@ -57,7 +57,7 @@ export default function About() {
               <CardTitle className="text-xl">Visão</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Tornar-se um modelo de referência para projetos práticos e acadêmicos, demonstrando o potencial técnico e criativo na produção de mídias digitais.
+              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonistas da transformação digital e social.
             </CardContent>
           </Card>
 
