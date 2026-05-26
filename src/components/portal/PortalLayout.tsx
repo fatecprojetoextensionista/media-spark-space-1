@@ -78,6 +78,16 @@ export function PortalLayout() {
                   {cat.name}
                 </Link>
               ))}
+              <Link
+                to="/sobre"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/sobre")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                Sobre
+              </Link>
             </nav>
 
             {/* Actions */}
@@ -103,13 +113,17 @@ export function PortalLayout() {
             </div>
           </div>
 
-          {/* Mobile Nav */}
+         {/* Mobile Nav */}
           {mobileMenuOpen && (
             <nav className="lg:hidden pb-4 space-y-1 animate-fade-in border-t border-border mt-2 pt-2">
               <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Início</Link>
               {categories.map((cat) => (
                 <Link key={cat.name} to={cat.path} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">{cat.name}</Link>
               ))}
+              
+              {/* COLOQUE A LINHA DO SOBRE AQUI: */}
+              <Link to="/sobre" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Sobre</Link>
+              
             </nav>
           )}
         </div>
