@@ -166,7 +166,6 @@ export function PortalLayout() {
                 </li>
                 
               </ul>
-              </ul>
             </div>
           </div>
         </div>
