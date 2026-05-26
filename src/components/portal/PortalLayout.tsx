@@ -157,6 +157,15 @@ export function PortalLayout() {
                     </Link>
                   </li>
                 ))}
+                
+                {/* COLOQUE A LINHA DO SOBRE AQUI: */}
+                <li>
+                  <Link to="/sobre" className="hover:text-primary-foreground transition-colors">
+                    Sobre
+                  </Link>
+                </li>
+                
+              </ul>
               </ul>
             </div>
           </div>
