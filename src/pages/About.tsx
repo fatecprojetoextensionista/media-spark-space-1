@@ -1,7 +1,7 @@
 import { BookOpen, Target, Compass, Users, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Você pode importar a foto real da sua equipe aqui no futuro:
-import equipeImg from "@/assets/Fatec.jpeg"; 
+import equipeImg from "@/assets/grupotec.png"; 
 
 export default function About() {
   return (
