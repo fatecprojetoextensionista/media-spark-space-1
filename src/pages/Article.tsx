@@ -171,8 +171,9 @@ export default function Article() {
                   {/* Lógica: Se não houver foto, mostra as iniciais */}
                   {getInitials(article.author_name_manual || article.group_authors)}
                   
-                  {/* Para colocar a foto real quando existir no banco, remova o comentário abaixo: */}
-                  {/* <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" /> */}
+                  {article.author_photo_url && (
+  <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" />
+)}
                 </div>
 
                 {/* NOME E LABEL */}
