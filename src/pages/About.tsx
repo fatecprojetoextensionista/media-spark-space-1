@@ -28,9 +28,7 @@ export default function About() {
               <span className="font-semibold text-primary"> Fatec Carapicuíba</span>.
             </p>
             <p>
-              A proposta nasceu com o objetivo de integrar conceitos avançados de design de interface (UI/UX), 
-              arquitetura de informação, desenvolvimento front-end moderno e gerenciamento de conteúdo multimídia 
-              em uma aplicação real e responsiva, focada na curadoria e distribuição de informação relevante.
+              Nossa proposta vai além da sala de aula: buscamos democratizar o acesso ao ecossistema da inovação tecnológica. Por meio de uma linguagem multinível, conteúdos acessíveis e experiências imersivas (como vídeos, infográficos e demonstrações interativas), o portal atua como uma ponte viva entre o conhecimento acadêmico e a sociedade, impulsionando a inclusão digital em Carapicuíba e região.
             </p>
           </CardContent>
         </Card>
