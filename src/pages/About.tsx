@@ -1,26 +1,9 @@
-import { BookOpen, Target, Compass, Users } from "lucide-react";
+import { BookOpen, Target, Compass, Users, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+// Você pode importar a foto real da sua equipe aqui no futuro:
+import equipeImg from "@/assets/Fatec.jpeg"; 
 
 export default function About() {
-  // Lista de integrantes do projeto acadêmico. 
-  // O sistema gera as iniciais automaticamente para o Avatar.
-  const team = [
-    { name: "Henrique Reche", role: "Desenvolvedor & Designer" },
-    { name: "Professor Jean", role: "Orientador / Docente" },
-    // Você pode adicionar ou remover integrantes facilmente aqui
-  ];
-
-  // Função auxiliar para extrair as iniciais do nome de forma limpa
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <div className="py-12 bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -91,31 +74,49 @@ export default function About() {
           </Card>
         </div>
 
-        {/* Seção da Equipe */}
+        {/* Seção da Equipe Técnica */}
         <div className="space-y-6">
           <div className="flex items-center space-x-3 border-b border-border pb-2">
             <Users className="text-primary" size={24} />
-            <h2 className="text-2xl font-bold tracking-tight">Nossa Equipe</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Equipe Técnica</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {team.map((member) => (
-              <Card key={member.name} className="border-border bg-card shadow-sm">
-                <CardContent className="flex items-center space-x-4 pt-6">
-                  {/* Componente de Avatar com as iniciais automáticas como Fallback */}
-                  <Avatar className="h-12 w-12 border border-primary/20 text-primary">
-                    <AvatarFallback className="font-semibold text-lg bg-primary/10 text-primary">
-                      {getInitials(member.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold text-base text-foreground">{member.name}</h3>
-                    <p className="text-sm text-muted-foreground">{member.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card className="border-border bg-card shadow-sm overflow-hidden">
+            <div className="md:flex">
+              {/* Foto em Grupo */}
+              <div className="md:w-5/12 h-64 md:h-auto bg-muted relative">
+                <img
+                  src={equipeImg}
+                  alt="Foto da Equipe Técnica"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Nomes e Agradecimentos */}
+              <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-3 font-serif">Desenvolvedores e Designers</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
+                  </p>
+                  <ul className="space-y-2 font-medium text-foreground text-sm">
+                    <li>• Henrique Reche</li>
+                    <li>• Nome do Colega 2</li>
+                    <li>• Nome do Colega 3</li>
+                  </ul>
+                </div>
+
+                <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-auto">
+                  <h4 className="flex items-center font-bold text-primary mb-2 text-sm uppercase tracking-wider">
+                    <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ao <strong>Professor Jean</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
 
       </div>
