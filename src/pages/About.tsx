@@ -100,9 +100,11 @@ export default function About() {
                     Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
                   </p>
                   <ul className="space-y-2 font-medium text-foreground text-sm">
+                    <li>• Giovanna Miranda</li>
                     <li>• Henrique Reche</li>
-                    <li>• Nome do Colega 2</li>
-                    <li>• Nome do Colega 3</li>
+                    <li>• Isabela Raíza</li>
+                    <li>• Raquel Barbosa</li>
+                    <li>• Sarah Ágata</li>
                   </ul>
                 </div>
 
@@ -111,7 +113,7 @@ export default function About() {
                     <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
                   </h4>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Ao <strong>Professor Jean</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
+                    Ao <strong>Professor Jean Laine</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
                   </p>
                 </div>
               </div>
