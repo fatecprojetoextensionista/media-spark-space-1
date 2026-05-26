@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, BookOpen, Hash } from "lucide-react";
+import { ArrowLeft, TrendingUp, BookOpen, Hash, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Article() {
@@ -34,7 +34,7 @@ export default function Article() {
         // Atualiza visualizações
         await supabase.from("articles").update({ views: (articleData.views ?? 0) + 1 }).eq("id", articleData.id);
 
-        // 2. Busca Sugestões (artigos da mesma categoria, excluindo o atual)
+        // 2. Busca Sugestões
         if (articleData.category) {
           const { data: suggestionsData } = await supabase
             .from("articles")
@@ -46,7 +46,7 @@ export default function Article() {
           setSuggestions(suggestionsData || []);
         }
 
-        // 3. Busca Artigos Em Alta (ordenados por visualizações)
+        // 3. Busca Artigos Em Alta
         const { data: trendingData } = await supabase
           .from("articles")
           .select("title, slug, views")
@@ -55,7 +55,7 @@ export default function Article() {
           .limit(4);
         setTrending(trendingData || []);
 
-        // 4. Busca Categorias para a barra lateral
+        // 4. Busca Categorias
         const { data: categoriesData } = await supabase
           .from("categories")
           .select("name, slug")
@@ -84,7 +84,6 @@ export default function Article() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       
-      {/* Botão de Voltar para a Home */}
       <div className="mb-6">
         <Link to="/" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
           <ArrowLeft size={16} className="mr-2" />
@@ -92,10 +91,9 @@ export default function Article() {
         </Link>
       </div>
 
-      {/* Grid de 3 Colunas: Esquerda (3) - Centro (6) - Direita (3) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* ================= BARRA LATERAL ESQUERDA ================= */}
+        {/* BARRA LATERAL ESQUERDA */}
         <aside className="hidden lg:block lg:col-span-3 space-y-8">
           <div className="sticky top-24">
             <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
@@ -121,7 +119,7 @@ export default function Article() {
           </div>
         </aside>
 
-        {/* ================= CONTEÚDO PRINCIPAL (CENTRO) ================= */}
+        {/* CONTEÚDO PRINCIPAL (CENTRO) */}
         <main className="lg:col-span-6 bg-card border border-border p-6 sm:p-8 rounded-xl shadow-sm">
           {article.category && (
             <Link to={`/categoria/${article.category.slug}`} className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded mb-4">
@@ -132,12 +130,6 @@ export default function Article() {
           <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">{article.title}</h1>
           
           <div className="flex flex-wrap gap-x-2 text-sm text-muted-foreground mb-6 font-sans">
-            {(article.author_name_manual || article.group_authors) && (
-              <span className="font-semibold text-foreground">
-                Por: {article.author_name_manual} {article.group_authors && `(${article.group_authors})`}
-              </span>
-            )}
-            <span>·</span>
             <span>
               {article.published_at && new Date(article.published_at).toLocaleDateString("pt-BR", { dateStyle: "long" })}
             </span>
@@ -157,13 +149,47 @@ export default function Article() {
             className="prose prose-lg max-w-none whitespace-pre-wrap font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
+
+          {/* ================= CAIXA DE AUTORES (NO FIM DO ARTIGO) ================= */}
+          {(article.author_name_manual || article.group_authors) && (
+            <div className="mt-16 pt-8 border-t border-border">
+              <h3 className="text-lg font-bold mb-6 flex items-center text-foreground font-serif">
+                <Users size={20} className="mr-2 text-primary" />
+                Sobre quem escreveu
+              </h3>
+              
+              <div className="bg-muted/30 rounded-xl p-6 border border-border/50 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                
+                {/* ESPAÇO PARA A FOTO DO AUTOR/GRUPO */}
+                <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-full overflow-hidden bg-primary/10 border-4 border-background shadow-sm flex items-center justify-center relative">
+                  {/* Se houver uma coluna de foto no banco no futuro, pode usar ela. Por enquanto é um placeholder amigável */}
+                  <span className="text-4xl text-primary/30">📸</span>
+                  
+                  {/* Para colocar a foto, você pode usar uma tag img como essa abaixo e colocar o caminho da imagem no src: */}
+                  {/* <img src="/caminho-da-foto.jpg" alt="Autores" className="absolute inset-0 w-full h-full object-cover" /> */}
+                </div>
+
+                <div className="text-center sm:text-left flex-1 space-y-2">
+                  <h4 className="text-xl font-bold text-foreground">
+                    {article.author_name_manual}
+                    {article.author_name_manual && article.group_authors && " & "}
+                    {article.group_authors}
+                  </h4>
+                  <p className="text-sm text-primary font-medium">Autores Convidados</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Responsáveis pela pesquisa, redação e estruturação do conteúdo apresentado neste artigo. 
+                    Este trabalho é fruto da colaboração entre os estudantes e a equipe do projeto da Fatec Carapicuíba.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
 
-        {/* ================= BARRA LATERAL DIREITA ================= */}
+        {/* BARRA LATERAL DIREITA */}
         <aside className="hidden lg:block lg:col-span-3 space-y-8">
           <div className="sticky top-24 space-y-8">
-            
-            {/* Bloco "Em Alta" */}
             <div>
               <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
                 <TrendingUp size={18} className="mr-2 text-primary" />
@@ -181,7 +207,6 @@ export default function Article() {
               </ul>
             </div>
 
-            {/* Bloco "Categorias" */}
             <div>
               <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
                 <Hash size={18} className="mr-2 text-primary" />
@@ -199,7 +224,6 @@ export default function Article() {
                 ))}
               </div>
             </div>
-
           </div>
         </aside>
 
