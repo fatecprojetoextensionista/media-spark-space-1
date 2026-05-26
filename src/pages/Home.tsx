@@ -14,6 +14,8 @@ interface ArticleRow {
   published_at: string | null;
   category_id: string | null;
   category?: { name: string; slug: string } | null;
+  author_name_manual: string | null; // Adicionado
+  group_authors: string | null; // Adicionado
 }
 
 interface VideoRow {
@@ -29,6 +31,13 @@ interface VideoRow {
 
 const formatDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" }) : "";
+
+// Função auxiliar para definir o nome do autor
+const getAuthorName = (article: ArticleRow) => {
+  if (article.author_name_manual) return article.author_name_manual;
+  if (article.group_authors) return article.group_authors;
+  return "Equipe";
+};
 
 export default function Home() {
   const [featured, setFeatured] = useState<ArticleRow | null>(null);
@@ -52,10 +61,10 @@ export default function Home() {
       const idEventos = catsData?.find(c => c.slug.toLowerCase() === "eventos")?.id;
       const idRecursos = catsData?.find(c => c.slug.toLowerCase() === "recursos")?.id;
 
-      // 2. Busca todos os artigos publicados
+      // 2. Busca todos os artigos publicados (Adicionado author_name_manual e group_authors)
       const { data: allArticles } = await supabase
         .from("articles")
-        .select("id, title, slug, excerpt, cover_image_url, published_at, category_id, category:categories(name, slug)")
+        .select("id, title, slug, excerpt, cover_image_url, published_at, category_id, author_name_manual, group_authors, category:categories(name, slug)")
         .eq("status", "published")
         .order("published_at", { ascending: false });
 
@@ -158,7 +167,7 @@ export default function Home() {
                     title={a.title}
                     excerpt={a.excerpt ?? ""}
                     category={a.category?.name || "Novidade"}
-                    author=""
+                    author={getAuthorName(a)}
                     date={formatDate(a.published_at)}
                     imageUrl={a.cover_image_url ?? undefined}
                   />
@@ -221,7 +230,7 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Notícias"}
-                      author=""
+                      author={getAuthorName(a)}
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
                   />
@@ -247,7 +256,7 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Tecnologia"}
-                      author=""
+                      author={getAuthorName(a)}
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
                     />
@@ -273,7 +282,7 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Institucional"}
-                      author=""
+                      author={getAuthorName(a)}
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
                     />
@@ -299,7 +308,7 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Eventos"}
-                      author=""
+                      author={getAuthorName(a)}
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
                     />
@@ -325,7 +334,7 @@ export default function Home() {
                       title={a.title}
                       excerpt={a.excerpt ?? ""}
                       category={a.category?.name || "Recursos"}
-                      author=""
+                      author={getAuthorName(a)}
                       date={formatDate(a.published_at)}
                       imageUrl={a.cover_image_url ?? undefined}
                     />
