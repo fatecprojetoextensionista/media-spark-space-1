@@ -69,7 +69,7 @@ export default function About() {
               <CardTitle className="text-xl">Valores</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Inovação constante, excelência em experiência do usuário (UX), colaboração mútua, ética acadêmica e democratização do acesso à informação tecnológica.
+             Impacto Social e Caráter Extensionista: Todo conhecimento gerado deve transbordar os muros da faculdade, gerando valor prático, inclusão e desenvolvimento para a comunidade.  Colaboração e Sinergia: Estimulamos o trabalho em equipe matricial, o respeito aos diferentes saberes (técnicos e criativos) e a responsabilidade coletiva.
             </CardContent>
           </Card>
         </div>
