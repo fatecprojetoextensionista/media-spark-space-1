@@ -10,20 +10,23 @@ import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
+// 1. Adicionado author_photo_url na Interface
 interface Article { 
   id: string; title: string; slug: string; excerpt: string | null; content: string; 
   cover_image_url: string | null; category_id: string | null; status: string; 
   views: number; published_at: string | null;
   author_name_manual: string | null;
   group_authors: string | null;
+  author_photo_url: string | null; 
 }
 interface Category { id: string; name: string; }
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+// 2. Adicionado author_photo_url no estado inicial
 const empty = { 
   title: "", slug: "", excerpt: "", content: "", cover_image_url: "", 
-  category_id: "", status: "draft", author_name_manual: "", group_authors: "" 
+  category_id: "", status: "draft", author_name_manual: "", group_authors: "", author_photo_url: "" 
 };
 
 export default function AdminArticles() {
@@ -33,7 +36,8 @@ export default function AdminArticles() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Article | null>(null);
   const [form, setForm] = useState(empty);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingAuthor, setUploadingAuthor] = useState(false);
 
   const load = async () => {
     const [a, c] = await Promise.all([
@@ -48,6 +52,7 @@ export default function AdminArticles() {
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   
+  // 3. Adicionado author_photo_url na hora de editar um artigo existente
   const openEdit = (a: Article) => {
     setEditing(a);
     setForm({
@@ -55,28 +60,49 @@ export default function AdminArticles() {
       cover_image_url: a.cover_image_url ?? "", category_id: a.category_id ?? "", status: a.status,
       author_name_manual: a.author_name_manual ?? "",
       group_authors: a.group_authors ?? "",
+      author_photo_url: a.author_photo_url ?? "",
     });
     setOpen(true);
   };
 
-  const uploadFile = async (file: File) => {
-    setUploading(true);
+  // Upload da imagem de capa
+  const uploadCover = async (file: File) => {
+    setUploadingCover(true);
     const path = `articles/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(path, file);
     
     if (error) {
       toast.error(error.message);
-      setUploading(false);
+      setUploadingCover(false);
       return;
     }
 
     const { data } = supabase.storage.from("media").getPublicUrl(path);
     setForm((f) => ({ ...f, cover_image_url: data.publicUrl }));
-    setUploading(false);
+    setUploadingCover(false);
     toast.success("Capa atualizada");
   };
 
+  // Upload da foto do autor
+  const uploadAuthorPhoto = async (file: File) => {
+    setUploadingAuthor(true);
+    const path = `authors/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("media").upload(path, file);
+    
+    if (error) {
+      toast.error(error.message);
+      setUploadingAuthor(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("media").getPublicUrl(path);
+    setForm((f) => ({ ...f, author_photo_url: data.publicUrl }));
+    setUploadingAuthor(false);
+    toast.success("Foto do autor atualizada");
+  };
+
   const save = async () => {
+    // 4. Adicionado author_photo_url no objeto que é enviado para a base de dados
     const payload: any = {
       title: form.title,
       slug: form.slug || slugify(form.title),
@@ -88,6 +114,7 @@ export default function AdminArticles() {
       author_id: user?.id,
       author_name_manual: form.author_name_manual || null,
       group_authors: form.group_authors || null,
+      author_photo_url: form.author_photo_url || null,
       published_at: form.status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
     
@@ -129,14 +156,34 @@ export default function AdminArticles() {
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editing ? form.slug : slugify(e.target.value) })} />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Nome do Autor</Label>
-                  <Input value={form.author_name_manual} onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} placeholder="Ex: Giovanna" />
+              {/* DADOS DO AUTOR */}
+              <div className="bg-muted/30 p-4 rounded-lg border border-border/50 space-y-4">
+                <h4 className="text-sm font-semibold border-b pb-2">Informações do Autor</h4>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Nome do Autor</Label>
+                    <Input value={form.author_name_manual} onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} placeholder="Ex: Giovanna" />
+                  </div>
+                  <div>
+                    <Label>Grupo / Equipe</Label>
+                    <Input value={form.group_authors} onChange={(e) => setForm({ ...form, group_authors: e.target.value })} placeholder="Ex: Design Digital" />
+                  </div>
                 </div>
+
                 <div>
-                  <Label>Grupo / Equipe</Label>
-                  <Input value={form.group_authors} onChange={(e) => setForm({ ...form, group_authors: e.target.value })} placeholder="Ex: Design Digital" />
+                  <Label>Foto do Autor</Label>
+                  <div className="flex gap-2 items-center">
+                    <Input value={form.author_photo_url} onChange={(e) => setForm({ ...form, author_photo_url: e.target.value })} placeholder="URL da foto (opcional)" />
+                    <label className="cursor-pointer">
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadAuthorPhoto(e.target.files[0])} />
+                      <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted bg-background whitespace-nowrap">
+                        <Upload size={14} /> {uploadingAuthor ? "A enviar..." : "Upload"}
+                      </span>
+                    </label>
+                  </div>
+                  {/* Pré-visualização da foto do autor (bolinha) */}
+                  {form.author_photo_url && <img src={form.author_photo_url} alt="Autor" className="mt-3 h-14 w-14 rounded-full object-cover border-2 border-primary/20 shadow-sm" />}
                 </div>
               </div>
 
@@ -148,13 +195,13 @@ export default function AdminArticles() {
               </div>
               
               <div>
-                <Label>Imagem de capa</Label>
+                <Label>Imagem de capa principal</Label>
                 <div className="flex gap-2 items-center">
                   <Input value={form.cover_image_url} onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} placeholder="URL da imagem" />
                   <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFile(e.target.files[0])} />
-                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted bg-background">
-                      <Upload size={14} /> {uploading ? "..." : "Upload"}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadCover(e.target.files[0])} />
+                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted bg-background whitespace-nowrap">
+                      <Upload size={14} /> {uploadingCover ? "A enviar..." : "Upload"}
                     </span>
                   </label>
                 </div>
