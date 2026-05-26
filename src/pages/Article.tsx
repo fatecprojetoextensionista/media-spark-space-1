@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, BookOpen, Hash, Users } from "lucide-react";
+import { ArrowLeft, TrendingUp, BookOpen, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+// Função para pegar as iniciais do autor (Ex: "Henrique Reche" vira "HR")
+const getInitials = (name: string) => {
+  if (!name) return "EQ";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export default function Article() {
   const { id } = useParams();
@@ -150,37 +161,30 @@ export default function Article() {
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
-          {/* ================= CAIXA DE AUTORES (NO FIM DO ARTIGO) ================= */}
+          {/* ================= CAIXA DE AUTOR SIMPLIFICADA (NO FIM DO ARTIGO) ================= */}
           {(article.author_name_manual || article.group_authors) && (
-            <div className="mt-16 pt-8 border-t border-border">
-              <h3 className="text-lg font-bold mb-6 flex items-center text-foreground font-serif">
-                <Users size={20} className="mr-2 text-primary" />
-                Sobre quem escreveu
-              </h3>
-              
-              <div className="bg-muted/30 rounded-xl p-6 border border-border/50 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+            <div className="mt-12 pt-6 border-t border-border">
+              <div className="flex items-center gap-4">
                 
-                {/* ESPAÇO PARA A FOTO DO AUTOR/GRUPO */}
-                <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-full overflow-hidden bg-primary/10 border-4 border-background shadow-sm flex items-center justify-center relative">
-                  {/* Se houver uma coluna de foto no banco no futuro, pode usar ela. Por enquanto é um placeholder amigável */}
-                  <span className="text-4xl text-primary/30">📸</span>
+                {/* FOTO OU INICIAIS */}
+                <div className="w-16 h-16 shrink-0 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative text-primary font-bold text-xl">
+                  {/* Lógica: Se não houver foto, mostra as iniciais */}
+                  {getInitials(article.author_name_manual || article.group_authors)}
                   
-                  {/* Para colocar a foto, você pode usar uma tag img como essa abaixo e colocar o caminho da imagem no src: */}
-                  {/* <img src="/caminho-da-foto.jpg" alt="Autores" className="absolute inset-0 w-full h-full object-cover" /> */}
+                  {/* Para colocar a foto real quando existir no banco, remova o comentário abaixo: */}
+                  {/* <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" /> */}
                 </div>
 
-                <div className="text-center sm:text-left flex-1 space-y-2">
-                  <h4 className="text-xl font-bold text-foreground">
+                {/* NOME E LABEL */}
+                <div>
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Autor</p>
+                  <h4 className="text-lg font-bold text-foreground font-serif">
                     {article.author_name_manual}
                     {article.author_name_manual && article.group_authors && " & "}
                     {article.group_authors}
                   </h4>
-                  <p className="text-sm text-primary font-medium">Autores Convidados</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Responsáveis pela pesquisa, redação e estruturação do conteúdo apresentado neste artigo. 
-                    Este trabalho é fruto da colaboração entre os estudantes e a equipe do projeto da Fatec Carapicuíba.
-                  </p>
                 </div>
+                
               </div>
             </div>
           )}
