@@ -157,7 +157,7 @@ export default function Article() {
           )}
 
           <div 
-            className="prose prose-lg max-w-none whitespace-pre-wrap font-sans text-foreground/90" 
+            className="prose prose-lg dark:prose-invert max-w-none whitespace-pre-wrap font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
