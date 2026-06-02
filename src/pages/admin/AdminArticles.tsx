@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +23,11 @@ interface Article {
 interface Category { id: string; name: string; }
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
+const articleSchema = z.object({
+  title: z.string().min(5, "O título precisa ter pelo menos 5 caracteres."),
+  category_id: z.string().min(1, "Por favor, selecione uma categoria."),
+  content: z.string().min(20, "O artigo está muito curto. Escreva algum conteúdo."),
+});
 // 2. Adicionado author_photo_url no estado inicial
 const empty = { 
   title: "", slug: "", excerpt: "", content: "", cover_image_url: "", 
@@ -102,6 +107,41 @@ export default function AdminArticles() {
   };
 
   const save = async () => {
+    // 1. Validação do Zod
+    const validation = articleSchema.safeParse(form);
+    
+    // Se a validação falhar, mostra o erro e para a função
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
+      toast.error(errorMessage);
+      return; 
+    }
+
+    // 2. Continua o salvamento normal
+    const payload: any = {
+      title: form.title,
+      slug: form.slug || slugify(form.title),
+      excerpt: form.excerpt || null,
+      content: form.content,
+      cover_image_url: form.cover_image_url || null,
+      category_id: form.category_id || null,
+      status: form.status,
+      author_id: user?.id,
+      author_name_manual: form.author_name_manual || null,
+      group_authors: form.group_authors || null,
+      author_photo_url: form.author_photo_url || null,
+      published_at: form.status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
+    };
+    
+    const { error } = editing
+      ? await supabase.from("articles").update(payload).eq("id", editing.id)
+      : await supabase.from("articles").insert(payload);
+      
+    if (error) return toast.error(error.message);
+    toast.success("Artigo salvo");
+    setOpen(false);
+    load();
+  };
     // 4. Adicionado author_photo_url no objeto que é enviado para a base de dados
     const payload: any = {
       title: form.title,
