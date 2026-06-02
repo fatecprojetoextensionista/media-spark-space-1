@@ -173,7 +173,7 @@ export default function About() {
           {/* INTEGRADO: Créditos do Manual inseridos logo abaixo do Carrossel */}
           <div className="text-right px-10">
             <p className="text-xs text-muted-foreground italic">
-              Desenvolvido por: Giovanna Miranda, Henrique Reche, Isabela Raíza, Raquel Barbosa e Sarah Ágata.
+              Desenvolvido por: Quéren Hapuque, Victoria Vieira Resende.
             </p>
           </div>
         </div>
