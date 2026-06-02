@@ -11,33 +11,31 @@ import {
 // Importações de imagens existentes
 import equipeImg from "@/assets/grupotec.png"; 
 
-// --- SUGESTÃO DE IMPORTAÇÃO DOS SLIDES DO SEU MANUAL ---
-// Depois que você exportar as páginas do TECHIN MANUAL.pdf como imagem, 
-// salve-as na sua pasta de assets e importe-as seguindo este padrão:
+// --- CORREÇÃO DOS IMPORTS (Nomes únicos para cada slide) ---
 import Slide1 from "@/assets/slide1.png"; 
 import Slide2 from "@/assets/slide2.png"; 
-import Slide1 from "@/assets/slide3.png"; 
-import Slide2 from "@/assets/slide4.png";
-import Slide1 from "@/assets/slide5.png"; 
-import Slide2 from "@/assets/slide6.png";
-import Slide1 from "@/assets/slide7.png";
-import Slide2 from "@/assets/slide8.png";
-import Slide1 from "@/assets/slide9.png";
-import Slide2 from "@/assets/slide10.png";
+import Slide3 from "@/assets/slide3.png"; 
+import Slide4 from "@/assets/slide4.png";
+import Slide5 from "@/assets/slide5.png"; 
+import Slide6 from "@/assets/slide6.png";
+import Slide7 from "@/assets/slide7.png";
+import Slide8 from "@/assets/slide8.png";
+import Slide9 from "@/assets/slide9.png";
+import Slide10 from "@/assets/slide10.png";
 
 export default function About() {
-  // Array contendo os slides do seu manual de identidade visual
+  // --- CORREÇÃO DO ARRAY (IDs sequenciais e variáveis corretas) ---
   const manualSlides = [
     { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
     { id: 2, img: Slide2, alt: "Manual TechIn - Página 2" },
-    { id: 1, img: Slide3, alt: "Manual TechIn - Página 3" },
-    { id: 2, img: Slide4, alt: "Manual TechIn - Página 4" },
-    { id: 1, img: Slide5, alt: "Manual TechIn - Página 5" },
-    { id: 2, img: Slide6, alt: "Manual TechIn - Página 6" },
-    { id: 1, img: Slide7, alt: "Manual TechIn - Página 7" },
-    { id: 2, img: Slide8, alt: "Manual TechIn - Página 8" },
-    { id: 1, img: Slide9, alt: "Manual TechIn - Página 9" },
-    { id: 2, img: Slide10, alt: "Manual TechIn - Página 10" },
+    { id: 3, img: Slide3, alt: "Manual TechIn - Página 3" },
+    { id: 4, img: Slide4, alt: "Manual TechIn - Página 4" },
+    { id: 5, img: Slide5, alt: "Manual TechIn - Página 5" },
+    { id: 6, img: Slide6, alt: "Manual TechIn - Página 6" },
+    { id: 7, img: Slide7, alt: "Manual TechIn - Página 7" },
+    { id: 8, img: Slide8, alt: "Manual TechIn - Página 8" },
+    { id: 9, img: Slide9, alt: "Manual TechIn - Página 9" },
+    { id: 10, img: Slide10, alt: "Manual TechIn - Página 10" },
   ];
 
   return (
@@ -58,7 +56,7 @@ export default function About() {
         <Card className="border-border bg-card shadow-sm">
           <CardContent className="pt-6 space-y-4 text-base leading-relaxed">
             <p>
-              Este portal é o resultado prático de uma initiative desenvolvida dentro da disciplina de 
+              Este portal é o resultado prático de uma iniciativa desenvolvida dentro da disciplina de 
               <span className="font-semibold text-primary"> Tópicos Especiais em Mídias Digitais</span>, 
               relevante ao curso superior de tecnologia em <span className="font-semibold text-primary">Design de Mídias Digitais</span> da 
               <span className="font-semibold text-primary"> Fatec Carapicuíba</span>.
@@ -91,7 +89,7 @@ export default function About() {
               <CardTitle className="text-xl">Visão</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonists da transformação digital e social.
+              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonistas da transformação digital e social.
             </CardContent>
           </Card>
 
@@ -103,12 +101,12 @@ export default function About() {
               <CardTitle className="text-xl">Valores</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Impacto Social e Caráter Extensionista: Todo conhecimento gerado deve transbordar os muros da faculdade, gerando valor prático, inclusão e desenvolvimento para a comunidade.  Colaboração e Sinergia: Estimulamos o trabalho em equipe matricial, o respeito aos diferentes saberes (técnicos e criativos) e a responsabilidade coletiva.
+              Impacto Social e Caráter Extensionista: Todo conhecimento gerado deve transbordar os muros da faculdade, gerando valor prático, inclusão e desenvolvimento para a comunidade. Colaboração e Sinergia: Estimulamos o trabalho em equipe matricial, o respeito aos diferentes saberes (técnicos e criativos) e a responsabilidade coletiva.
             </CardContent>
           </Card>
         </div>
 
-        {/* --- NOVA SEÇÃO: MANUAL DE IDENTIDADE VISUAL (SLIDER) --- */}
+        {/* --- MANUAL DE IDENTIDADE VISUAL (SLIDER) --- */}
         <div className="space-y-6">
           <div className="flex items-center space-x-3 border-b border-border pb-2">
             <BookOpen className="text-primary" size={24} />
@@ -138,7 +136,6 @@ export default function About() {
                 ))}
               </CarouselContent>
               
-              {/* Botões de navegação lateral com estilo integrado ao tema */}
               <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
               <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
             </Carousel>
@@ -166,7 +163,7 @@ export default function About() {
               {/* Nomes e Agradecimentos */}
               <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold mb-3 font-serif">Desenvolvedores e Designers</h3>
+                  <h3 className="text-xl font-bold mb-3">Desenvolvedores e Designers</h3>
                   <p className="text-muted-foreground text-sm mb-4">
                     Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
                   </p>
