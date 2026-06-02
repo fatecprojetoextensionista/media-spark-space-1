@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
-import logoImg from "@/assets/logo-C7WwK5gX.png";
 import logoSymbolWhite from "@/assets/logo-symbol-white.png";
-import logoImg from "@/assets/TechIn logo.png";
+import logoImg from "@/assets/TechIn logo.png"; // Mantida a importação oficial da logo
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
@@ -17,12 +16,10 @@ const categories = [
 export function PortalLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   // UX: Função para destacar o link ativo no menu
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    // Normalizamos para minúsculas para evitar erros de case-sensitivity
     return location.pathname.toLowerCase().startsWith(path.toLowerCase());
   };
 
@@ -92,12 +89,15 @@ export function PortalLayout() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 rounded-md hover:bg-muted transition-colors"
+              {/* INTEGRADO: Ajustado o ícone da lupa para ser um Link direto e clicável para a página de busca */}
+              <Link
+                to="/busca"
+                className="p-2 rounded-md hover:bg-muted transition-colors text-foreground flex items-center justify-center"
+                aria-label="Página de pesquisa"
               >
                 <Search size={18} />
-              </button>
+              </Link>
+              
               <Link
                 to="/busca"
                 className="hidden md:inline-flex px-4 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
@@ -113,17 +113,14 @@ export function PortalLayout() {
             </div>
           </div>
 
-         {/* Mobile Nav */}
+          {/* Mobile Nav */}
           {mobileMenuOpen && (
             <nav className="lg:hidden pb-4 space-y-1 animate-fade-in border-t border-border mt-2 pt-2">
               <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Início</Link>
               {categories.map((cat) => (
                 <Link key={cat.name} to={cat.path} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">{cat.name}</Link>
               ))}
-              
-              {/* COLOQUE A LINHA DO SOBRE AQUI: */}
               <Link to="/sobre" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Sobre</Link>
-              
             </nav>
           )}
         </div>
@@ -144,7 +141,7 @@ export function PortalLayout() {
                 <img src={logoSymbolWhite} alt="Símbolo do Portal" className="h-10 w-auto object-contain" />
               </div>
               <p className="text-sm text-primary-foreground/70">
-                Portal institucional TechIn para divulgação de notícias, artigos, vídeos e recursos.
+                Portal institutional TechIn para divulgação de notícias, articles, vídeos e recursos.
               </p>
             </div>
             <div>
@@ -157,14 +154,11 @@ export function PortalLayout() {
                     </Link>
                   </li>
                 ))}
-                
-                {/* COLOQUE A LINHA DO SOBRE AQUI: */}
                 <li>
                   <Link to="/sobre" className="hover:text-primary-foreground transition-colors">
                     Sobre
                   </Link>
                 </li>
-                
               </ul>
             </div>
           </div>
