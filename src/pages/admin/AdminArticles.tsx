@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 // 1. Adicionado author_photo_url na Interface
 interface Article { 
@@ -206,9 +207,12 @@ export default function AdminArticles() {
 
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
 
-              <div>
-                <Label>Conteúdo (HTML)</Label>
-                <Textarea rows={10} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Escreva seu artigo aqui..." />
+             <div>
+                <Label>Conteúdo do Artigo</Label>
+                <RichTextEditor 
+                  value={form.content} 
+                  onChange={(html) => setForm({ ...form, content: html })} 
+                />
               </div>
               
               <div>
