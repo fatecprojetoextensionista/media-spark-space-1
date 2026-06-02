@@ -14,15 +14,30 @@ import equipeImg from "@/assets/grupotec.png";
 // --- SUGESTÃO DE IMPORTAÇÃO DOS SLIDES DO SEU MANUAL ---
 // Depois que você exportar as páginas do TECHIN MANUAL.pdf como imagem, 
 // salve-as na sua pasta de assets e importe-as seguindo este padrão:
-import Slide1 from "@/assets/slide1.png"; // Exemplo fictício, substitua pelos arquivos reais
+import Slide1 from "@/assets/slide1.png"; 
 import Slide2 from "@/assets/slide2.png"; 
+import Slide1 from "@/assets/slide3.png"; 
+import Slide2 from "@/assets/slide4.png";
+import Slide1 from "@/assets/slide5.png"; 
+import Slide2 from "@/assets/slide6.png";
+import Slide1 from "@/assets/slide7.png";
+import Slide2 from "@/assets/slide8.png";
+import Slide1 from "@/assets/slide9.png";
+import Slide2 from "@/assets/slide10.png";
 
 export default function About() {
   // Array contendo os slides do seu manual de identidade visual
   const manualSlides = [
     { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
     { id: 2, img: Slide2, alt: "Manual TechIn - Página 2" },
-    // Adicione os demais slides aqui conforme criar os arquivos de imagem
+    { id: 1, img: Slide3, alt: "Manual TechIn - Página 3" },
+    { id: 2, img: Slide4, alt: "Manual TechIn - Página 4" },
+    { id: 1, img: Slide5, alt: "Manual TechIn - Página 5" },
+    { id: 2, img: Slide6, alt: "Manual TechIn - Página 6" },
+    { id: 1, img: Slide7, alt: "Manual TechIn - Página 7" },
+    { id: 2, img: Slide8, alt: "Manual TechIn - Página 8" },
+    { id: 1, img: Slide9, alt: "Manual TechIn - Página 9" },
+    { id: 2, img: Slide10, alt: "Manual TechIn - Página 10" },
   ];
 
   return (
