@@ -10,9 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Pencil, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import RichTextEditor from "@/components/admin/RichTextEditor"; // Import do Editor Rico
 
-// 1. Adicionado author_photo_url na Interface
 interface Article { 
   id: string; title: string; slug: string; excerpt: string | null; content: string; 
   cover_image_url: string | null; category_id: string | null; status: string; 
@@ -31,7 +30,6 @@ const articleSchema = z.object({
   content: z.string().min(20, "O artigo está muito curto. Escreva algum conteúdo."),
 });
 
-// 2. Adicionado author_photo_url no estado inicial
 const empty = { 
   title: "", slug: "", excerpt: "", content: "", cover_image_url: "", 
   category_id: "", status: "draft", author_name_manual: "", group_authors: "", author_photo_url: "" 
@@ -46,7 +44,9 @@ export default function AdminArticles() {
   const [form, setForm] = useState(empty);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAuthor, setUploadingAuthor] = useState(false);
-  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  
+  // ESTADO PARA CONTROLAR SE MOSTRA O HTML OU O EDITOR VISUAL
+  const [isHtmlMode, setIsHtmlMode] = useState(false); 
 
   const load = async () => {
     const [a, c] = await Promise.all([
@@ -59,9 +59,13 @@ export default function AdminArticles() {
 
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openNew = () => { 
+    setEditing(null); 
+    setForm(empty); 
+    setOpen(true); 
+    setIsHtmlMode(false); // Sempre abre no modo visual
+  };
   
-  // 3. Adicionado author_photo_url na hora de editar um artigo existente
   const openEdit = (a: Article) => {
     setEditing(a);
     setForm({
@@ -71,10 +75,10 @@ export default function AdminArticles() {
       group_authors: a.group_authors ?? "",
       author_photo_url: a.author_photo_url ?? "",
     });
+    setIsHtmlMode(false); // Sempre abre no modo visual primeiro
     setOpen(true);
   };
 
-  // Upload da imagem de capa
   const uploadCover = async (file: File) => {
     setUploadingCover(true);
     const path = `articles/${Date.now()}-${file.name}`;
@@ -92,7 +96,6 @@ export default function AdminArticles() {
     toast.success("Capa atualizada");
   };
 
-  // Upload da foto do autor
   const uploadAuthorPhoto = async (file: File) => {
     setUploadingAuthor(true);
     const path = `authors/${Date.now()}-${file.name}`;
@@ -111,17 +114,14 @@ export default function AdminArticles() {
   };
 
   const save = async () => {
-    // 1. Validação do Zod
     const validation = articleSchema.safeParse(form);
     
-    // Se a validação falhar, mostra o erro e para a função
     if (!validation.success) {
       const errorMessage = validation.error.errors[0].message;
       toast.error(errorMessage);
       return; 
     }
 
-    // 2. Continua o salvamento normal
     const payload: any = {
       title: form.title,
       slug: form.slug || slugify(form.title),
@@ -166,7 +166,7 @@ export default function AdminArticles() {
           <DialogTrigger asChild>
             <Button onClick={openNew}><Plus size={16} className="mr-2" />Novo artigo</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} artigo</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
               
@@ -201,20 +201,42 @@ export default function AdminArticles() {
                       </span>
                     </label>
                   </div>
-                  {/* Pré-visualização da foto do autor (bolinha) */}
                   {form.author_photo_url && <img src={form.author_photo_url} alt="Autor" className="mt-3 h-14 w-14 rounded-full object-cover border-2 border-primary/20 shadow-sm" />}
                 </div>
               </div>
 
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
 
-             <div>
-                <Label>Conteúdo do Artigo</Label>
-                <RichTextEditor 
-                  value={form.content} 
-                  onChange={(html) => setForm({ ...form, content: html })} 
-                />
+              {/* === CONTEÚDO COM ALTERNÂNCIA (VISUAL / HTML) === */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Conteúdo do Artigo</Label>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsHtmlMode(!isHtmlMode)}
+                  >
+                    {isHtmlMode ? "🎨 Usar Editor Visual" : "⌨️ Editar Código HTML"}
+                  </Button>
+                </div>
+                
+                {isHtmlMode ? (
+                  <Textarea 
+                    rows={15} 
+                    value={form.content} 
+                    onChange={(e) => setForm({ ...form, content: e.target.value })} 
+                    placeholder="Cole o seu código HTML aqui..." 
+                    className="font-mono text-sm bg-muted/30"
+                  />
+                ) : (
+                  <RichTextEditor 
+                    value={form.content} 
+                    onChange={(html) => setForm({ ...form, content: html })} 
+                  />
+                )}
               </div>
+              {/* ================================================= */}
               
               <div>
                 <Label>Imagem de capa principal</Label>
