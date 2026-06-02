@@ -17,8 +17,8 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     },
     editorProps: {
       attributes: {
-        // Aplica as classes do shadcn e o 'prose' para visualização em tempo real
-        className: 'prose prose-sm dark:prose-invert min-h-[300px] max-w-none border border-input bg-background rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+        // Aplica as classes do shadcn e o 'prose' justificado para visualização em tempo real
+        className: 'prose prose-sm dark:prose-invert min-h-[300px] max-w-none text-justify font-sans border border-input bg-background rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
       },
     },
   });
@@ -71,7 +71,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </Button>
       </div>
       
-      {/* Área onde o usuário vai digitar */}
+      {/* Área onde o utilizador vai digitar */}
       <EditorContent editor={editor} />
     </div>
   );
