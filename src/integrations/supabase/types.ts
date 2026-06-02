@@ -62,6 +62,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "articles_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "articles_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -69,6 +76,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      authors: {
+        Row: {
+          id: string
+          name: string
+          photo_url: string
+          linkedin_url: string
+          email: string
+          role_type: 'autor' | 'desenvolvedor' | 'orientador'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          photo_url: string
+          linkedin_url: string
+          email: string
+          role_type: 'autor' | 'desenvolvedor' | 'orientador'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          photo_url?: string
+          linkedin_url?: string
+          email?: string
+          role_type?: 'autor' | 'desenvolvedor' | 'orientador'
+          created_at?: string
+        }
+        Relationships: []
       }
       categories: {
         Row: {
@@ -198,6 +235,13 @@ export type Database = {
           views?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "videos_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "videos_category_id_fkey"
             columns: ["category_id"]
