@@ -156,8 +156,9 @@ export default function Article() {
             <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8 shadow-sm" />
           )}
 
-        <div 
-            className="prose prose-lg dark:prose-invert max-w-none font-sans text-foreground/90" 
+          {/* O texto justificado, escuro e sem espaços extra está a ser aplicado aqui: */}
+          <div 
+            className="prose prose-lg dark:prose-invert max-w-none text-justify font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
@@ -172,8 +173,8 @@ export default function Article() {
                   {getInitials(article.author_name_manual || article.group_authors)}
                   
                   {article.author_photo_url && (
-  <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" />
-)}
+                    <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" />
+                  )}
                 </div>
 
                 {/* NOME E LABEL */}
