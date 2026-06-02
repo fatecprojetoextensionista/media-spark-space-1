@@ -1,4 +1,5 @@
-import { BookOpen, Target, Compass, Users, Heart } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { BookOpen, Target, Compass, Users, Heart, Linkedin, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Carousel, 
@@ -7,11 +8,10 @@ import {
   CarouselNext, 
   CarouselPrevious 
 } from "@/components/ui/carousel";
+import { supabase } from "@/integrations/supabase/client";
 
-// Importações de imagens existentes
+// Importações de imagens existentes da equipe técnica fixa e carrossel
 import equipeImg from "@/assets/grupotec.png"; 
-
-// --- CORREÇÃO DOS IMPORTS (Nomes únicos para cada slide) ---
 import Slide1 from "@/assets/slide1.png"; 
 import Slide2 from "@/assets/slide2.png"; 
 import Slide3 from "@/assets/slide3.png"; 
@@ -23,8 +23,37 @@ import Slide8 from "@/assets/slide8.png";
 import Slide9 from "@/assets/slide9.png";
 import Slide10 from "@/assets/slide10.png";
 
+// Interface para a tipagem dos autores dinâmicos do banco de dados
+interface Author {
+  id: string;
+  name: string;
+  photo_url: string;
+  linkedin_url: string;
+  email: string;
+  role_type: 'autor' | 'desenvolvedor' | 'orientador';
+}
+
 export default function About() {
-  // --- CORREÇÃO DO ARRAY (IDs sequenciais e variáveis corretas) ---
+  const [authors, setAuthors] = useState<Author[]>([]);
+
+  // Buscar autores dinâmicos salvos no Supabase
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      const { data } = await supabase
+        .from('authors')
+        .select('*')
+        .order('name', { ascending: true });
+      if (data) setAuthors(data as Author[]);
+    };
+
+    fetchAuthors();
+  }, []);
+
+  // Filtrar os integrantes dinâmicos por categoria
+  const autores = authors.filter(a => a.role_type === 'autor');
+  const desenvolvedores = authors.filter(a => a.role_type === 'desenvolvedor');
+  const orientadores = authors.filter(a => a.role_type === 'orientador');
+
   const manualSlides = [
     { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
     { id: 2, img: Slide2, alt: "Manual TechIn - Página 2" },
@@ -40,7 +69,7 @@ export default function About() {
 
   return (
     <div className="py-12 bg-background text-foreground">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Cabeçalho Principal */}
         <div className="text-center space-y-4">
@@ -56,10 +85,10 @@ export default function About() {
         <Card className="border-border bg-card shadow-sm">
           <CardContent className="pt-6 space-y-4 text-base leading-relaxed">
             <p>
-              Este portal é o resultado prático de uma iniciativa desenvolvida dentro da disciplina de 
-              <span className="font-semibold text-primary"> Tópicos Especiais em Mídias Digitais</span>, 
-              relevante ao curso superior de tecnologia em <span className="font-semibold text-primary">Design de Mídias Digitais</span> da 
-              <span className="font-semibold text-primary"> Fatec Carapicuíba</span>.
+              Este portal é o resultado prático de uma iniciativa desenvolvida dentro da disciplina de{" "}
+              <span className="font-semibold text-primary">Tópicos Especiais em Mídias Digitais</span>, 
+              relevante ao curso superior de tecnologia em <span className="font-semibold text-primary">Design de Mídias Digitais</span> da{" "}
+              <span className="font-semibold text-primary">Fatec Carapicuíba</span>.
             </p>
             <p>
               Nossa proposta vai além da sala de aula: buscamos democratizar o acesso ao ecossistema da inovação tecnológica. Por meio de uma linguagem multinível, conteúdos acessíveis e experiências imersivas (como vídeos, infográficos e demonstrações interativas), o portal atua como uma ponte viva entre o conhecimento acadêmico e a sociedade, impulsionando a inclusão digital em Carapicuíba e região.
@@ -142,7 +171,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* Seção da Equipe Técnica */}
+        {/* Seção da Equipe Técnica Original */}
         <div className="space-y-6">
           <div className="flex items-center space-x-3 border-b border-border pb-2">
             <Users className="text-primary" size={24} />
@@ -189,6 +218,80 @@ export default function About() {
           </Card>
         </div>
 
+        {/* --- NOVA SEÇÃO DINÂMICA: AUTORES, DESENVOLVEDORES E ORIENTADORES (ABAIXO DA EQUIPE TÉCNICA) --- */}
+        {(orientadores.length > 0 || autores.length > 0 || desenvolvedores.length > 0) && (
+          <section className="space-y-12 pt-4">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-bold tracking-tight text-primary">Créditos e Colaboradores</h2>
+              <p className="text-muted-foreground max-w-xl mx-auto text-sm">
+                Integrantes adicionais que participaram ativamente da pesquisa de conteúdo, programação estrutural e mentoria.
+              </p>
+            </div>
+
+            {/* Bloco de Orientadores */}
+            {orientadores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Orientadores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {orientadores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+
+            {/* Bloco de Autores */}
+            {autores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Autores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {autores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+
+            {/* Bloco de Desenvolvedores */}
+            {desenvolvedores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Desenvolvedores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {desenvolvedores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// Função auxiliar reutilizável para renderização de cada card de membro dinâmico
+function renderMemberCard(member: Author) {
+  return (
+    <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
+      <img
+        src={member.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
+        alt={member.name}
+        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
+      />
+      <div>
+        <h4 className="font-semibold text-lg leading-tight">{member.name}</h4>
+        <p className="text-xs text-muted-foreground capitalize mt-1 px-2 py-0.5 bg-secondary rounded-full inline-block">
+          {member.role_type}
+        </p>
+      </div>
+      
+      <div className="flex items-center space-x-3 pt-2">
+        {member.linkedin_url && (
+          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+            <Linkedin className="w-5 h-5" />
+          </a>
+        )}
+        {member.email && (
+          <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
+            <Mail className="w-5 h-5" />
+          </a>
+        )}
       </div>
     </div>
   );
