@@ -46,6 +46,7 @@ export default function AdminArticles() {
   const [form, setForm] = useState(empty);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAuthor, setUploadingAuthor] = useState(false);
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
 
   const load = async () => {
     const [a, c] = await Promise.all([
