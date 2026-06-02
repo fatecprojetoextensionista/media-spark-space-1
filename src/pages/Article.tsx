@@ -156,8 +156,8 @@ export default function Article() {
             <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8 shadow-sm" />
           )}
 
-          <div 
-            className="prose prose-lg dark:prose-invert max-w-none whitespace-pre-wrap font-sans text-foreground/90" 
+        <div 
+            className="prose prose-lg dark:prose-invert max-w-none font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
