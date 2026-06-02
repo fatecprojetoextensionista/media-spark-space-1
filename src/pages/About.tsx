@@ -169,6 +169,13 @@ export default function About() {
               <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
             </Carousel>
           </div>
+
+          {/* INTEGRADO: Créditos do Manual inseridos logo abaixo do Carrossel */}
+          <div className="text-right px-10">
+            <p className="text-xs text-muted-foreground italic">
+              Desenvolvido por: Giovanna Miranda, Henrique Reche, Isabela Raíza, Raquel Barbosa e Sarah Ágata.
+            </p>
+          </div>
         </div>
 
         {/* Seção da Equipe Técnica Original */}
