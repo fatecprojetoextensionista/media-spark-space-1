@@ -1,9 +1,30 @@
 import { BookOpen, Target, Compass, Users, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// Você pode importar a foto real da sua equipe aqui no futuro:
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
+} from "@/components/ui/carousel";
+
+// Importações de imagens existentes
 import equipeImg from "@/assets/grupotec.png"; 
 
+// --- SUGESTÃO DE IMPORTAÇÃO DOS SLIDES DO SEU MANUAL ---
+// Depois que você exportar as páginas do TECHIN MANUAL.pdf como imagem, 
+// salve-as na sua pasta de assets e importe-as seguindo este padrão:
+import manualSlide1 from "@/assets/manual-slide1.png"; // Exemplo fictício, substitua pelos arquivos reais
+import manualSlide2 from "@/assets/manual-slide2.png"; 
+
 export default function About() {
+  // Array contendo os slides do seu manual de identidade visual
+  const manualSlides = [
+    { id: 1, img: manualSlide1, alt: "Manual TechIn - Página 1" },
+    { id: 2, img: manualSlide2, alt: "Manual TechIn - Página 2" },
+    // Adicione os demais slides aqui conforme criar os arquivos de imagem
+  ];
+
   return (
     <div className="py-12 bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -22,7 +43,7 @@ export default function About() {
         <Card className="border-border bg-card shadow-sm">
           <CardContent className="pt-6 space-y-4 text-base leading-relaxed">
             <p>
-              Este portal é o resultado prático de uma iniciativa desenvolvida dentro da disciplina de 
+              Este portal é o resultado prático de uma initiative desenvolvida dentro da disciplina de 
               <span className="font-semibold text-primary"> Tópicos Especiais em Mídias Digitais</span>, 
               relevante ao curso superior de tecnologia em <span className="font-semibold text-primary">Design de Mídias Digitais</span> da 
               <span className="font-semibold text-primary"> Fatec Carapicuíba</span>.
@@ -55,7 +76,7 @@ export default function About() {
               <CardTitle className="text-xl">Visão</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonistas da transformação digital e social.
+              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonists da transformação digital e social.
             </CardContent>
           </Card>
 
@@ -67,9 +88,46 @@ export default function About() {
               <CardTitle className="text-xl">Valores</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-             Impacto Social e Caráter Extensionista: Todo conhecimento gerado deve transbordar os muros da faculdade, gerando valor prático, inclusão e desenvolvimento para a comunidade.  Colaboração e Sinergia: Estimulamos o trabalho em equipe matricial, o respeito aos diferentes saberes (técnicos e criativos) e a responsabilidade coletiva.
+              Impacto Social e Caráter Extensionista: Todo conhecimento gerado deve transbordar os muros da faculdade, gerando valor prático, inclusão e desenvolvimento para a comunidade.  Colaboração e Sinergia: Estimulamos o trabalho em equipe matricial, o respeito aos diferentes saberes (técnicos e criativos) e a responsabilidade coletiva.
             </CardContent>
           </Card>
+        </div>
+
+        {/* --- NOVA SEÇÃO: MANUAL DE IDENTIDADE VISUAL (SLIDER) --- */}
+        <div className="space-y-6">
+          <div className="flex items-center space-x-3 border-b border-border pb-2">
+            <BookOpen className="text-primary" size={24} />
+            <h2 className="text-2xl font-bold tracking-tight">Manual de Identidade Visual</h2>
+          </div>
+          
+          <div className="w-full relative px-10">
+            <Carousel className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card">
+              <CarouselContent>
+                {manualSlides.map((slide) => (
+                  <CarouselItem key={slide.id}>
+                    <div className="relative aspect-[16/9] w-full bg-muted flex items-center justify-center">
+                      {slide.img ? (
+                        <img
+                          src={slide.img}
+                          alt={slide.alt}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-center p-6 text-muted-foreground text-sm">
+                          {slide.alt} <br />
+                          <span className="text-xs opacity-75">(Pronto para receber o arquivo de imagem)</span>
+                        </div>
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              
+              {/* Botões de navegação lateral com estilo integrado ao tema */}
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
+            </Carousel>
+          </div>
         </div>
 
         {/* Seção da Equipe Técnica */}
