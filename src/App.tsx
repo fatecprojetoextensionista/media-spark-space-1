@@ -59,7 +59,6 @@ const App = () => (
               <Route path="videos" element={<AdminVideos />} />
               <Route path="categories" element={<AdminCategories />} />
               <Route path="authors" element={<AdminAuthors />} /> {/* <-- ADICIONE ESTA LINHA */}
-              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
