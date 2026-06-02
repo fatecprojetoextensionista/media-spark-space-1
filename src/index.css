@@ -115,3 +115,18 @@
     text-wrap: balance;
   }
 }
+/* Força as imagens de dentro dos artigos a sempre aparecerem e ficarem responsivas */
+.prose img {
+  display: block !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Evita que o "TAB" (text-indent) que colocamos empurre as imagens caso elas sejam o primeiro item do parágrafo */
+.prose p:has(img) {
+  text-indent: 0 !important;
+}
