@@ -1,30 +1,74 @@
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { Button } from "@/components/ui/button"
 
-// 1. Ensinamos a extensão de Imagem a entender e guardar a propriedade "width" (largura)
+// =========================================================================
+// 1. COMPONENTE VISUAL DA IMAGEM COM O SLIDER DE TAMANHO
+// =========================================================================
+const ResizableImageNode = (props: any) => {
+  const { node, updateAttributes, selected } = props;
+  const width = node.attrs.width || 100;
+
+  return (
+    <NodeViewWrapper 
+      className="relative inline-block max-w-full my-4" 
+      style={{ width: `${width}%` }}
+    >
+      <img 
+        src={node.attrs.src} 
+        className={`w-full h-auto rounded-lg transition-all ${selected ? 'ring-4 ring-primary/50' : 'shadow-sm'}`} 
+        alt="Imagem do artigo" 
+      />
+
+      {/* Painel Flutuante que aparece SÓ QUANDO clica na imagem */}
+      {selected && (
+        <div 
+          contentEditable={false} // Impede que a pessoa consiga digitar aqui dentro
+          className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm border border-border shadow-lg p-2.5 rounded-lg flex items-center gap-3 z-50 transition-all"
+        >
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tamanho</span>
+          <input
+            type="range"
+            min="10"
+            max="100"
+            value={width}
+            onChange={(e) => updateAttributes({ width: e.target.value })}
+            className="w-24 cursor-pointer accent-primary"
+          />
+          <span className="text-xs font-bold text-foreground w-8 text-right">{width}%</span>
+        </div>
+      )}
+    </NodeViewWrapper>
+  );
+};
+
+// =========================================================================
+// 2. EXTENSÃO DO TIPTAP CONFIGURADA PARA USAR O COMPONENTE ACIMA
+// =========================================================================
 const CustomImage = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
       width: {
-        default: null,
-        parseHTML: element => element.getAttribute('width'),
+        default: 100,
+        parseHTML: element => element.style.width ? element.style.width.replace('%', '') : '100',
         renderHTML: attributes => {
-          if (!attributes.width) {
-            return {}
-          }
           return {
-            width: attributes.width,
-            style: `width: ${attributes.width}`, // Força o CSS a respeitar a largura
+            style: `width: ${attributes.width}%`,
           }
         },
       },
     }
   },
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImageNode)
+  }
 })
 
+// =========================================================================
+// 3. EDITOR PRINCIPAL
+// =========================================================================
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -37,19 +81,16 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       CustomImage.configure({
         inline: true,
         allowBase64: true,
-        HTMLAttributes: {
-          class: 'rounded-lg max-w-full h-auto my-4',
-        },
       }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      // Atualiza o estado do formulário sempre que o texto muda
+      // Atualiza o formulário sempre que o redator altera algo
       onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        // Aplica as classes do shadcn e o 'prose' justificado para visualização em tempo real
+        // Classes que deixam o editor visualmente igual ao resultado final (justificado, mesma fonte, etc)
         className: 'prose prose-sm dark:prose-invert min-h-[300px] max-w-none text-justify font-sans border border-input bg-background rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
       },
     },
@@ -57,68 +98,43 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   if (!editor) return null;
 
+  // Função simples apenas para pedir a URL da nova imagem
   const addImage = () => {
-    // CENÁRIO A: Se uma imagem já estiver clicada/selecionada, vamos apenas editar o tamanho dela!
-    if (editor.isActive('image')) {
-      const currentWidth = editor.getAttributes('image').width || '';
-      const newWidth = window.prompt('🔄 Alterar tamanho da imagem selecionada\n\nDigite a largura (Ex: 100%, 500px, 300px). \nDeixe em branco para voltar ao tamanho original:', currentWidth);
-      
-      if (newWidth !== null) {
-        // Formata o texto para garantir que tem 'px' ou '%' no final
-        const formattedWidth = newWidth.includes('%') || newWidth.includes('px') || newWidth === '' ? newWidth : `${newWidth}px`;
-        
-        if (formattedWidth === '') {
-            editor.chain().focus().updateAttributes('image', { width: null }).run();
-        } else {
-            editor.chain().focus().updateAttributes('image', { width: formattedWidth }).run();
-        }
-      }
-      return;
-    }
-
-    // CENÁRIO B: Se não tiver imagem selecionada, pede a URL para inserir uma nova
-    const url = window.prompt('1️⃣ Cole a URL da imagem aqui:');
+    const url = window.prompt('Cole a URL da imagem aqui:');
     if (url) {
-      const width = window.prompt('2️⃣ Qual o tamanho da imagem? \n\n(Ex: 100%, 500px, 300px). \nDeixe em branco para manter o tamanho original:');
-      
-      if (width) {
-        const formattedWidth = width.includes('%') || width.includes('px') ? width : `${width}px`;
-        editor.chain().focus().insertContent({
-          type: 'image',
-          attrs: {
-            src: url,
-            width: formattedWidth
-          }
-        }).run();
-      } else {
-        editor.chain().focus().setImage({ src: url }).run();
-      }
+      editor.chain().focus().insertContent({
+        type: 'image',
+        attrs: {
+          src: url,
+          width: 100 // Nova imagem entra sempre com 100% de tamanho por padrão
+        }
+      }).run();
     }
   };
 
   return (
     <div className="flex flex-col gap-2">
+      {/* BARRA DE FERRAMENTAS */}
       <div className="flex flex-wrap gap-2 p-1 border border-input rounded-md bg-muted/50">
-        {/* BOTÕES DE FORMATAÇÃO */}
         <Button type="button" variant={editor.isActive('bold') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleBold().run()}>Negrito</Button>
         <Button type="button" variant={editor.isActive('italic') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleItalic().run()}>Itálico</Button>
         <Button type="button" variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>Título H2</Button>
         <Button type="button" variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>Título H3</Button>
         <Button type="button" variant={editor.isActive('bulletList') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleBulletList().run()}>Lista</Button>
         
-        {/* BOTÃO DE IMAGEM INTELIGENTE */}
+        {/* BOTÃO DE INSERIR IMAGEM */}
         <Button
           type="button"
-          // O botão fica com estilo de 'destaque' e muda de texto se você clicar em cima de uma imagem no texto!
-          variant={editor.isActive('image') ? 'default' : 'outline'}
+          variant="outline"
           size="sm"
           onClick={addImage}
-          className="ml-auto"
+          className="ml-auto bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
         >
-          {editor.isActive('image') ? '📏 Editar Tamanho' : '🖼️ Inserir Imagem'}
+          🖼️ Inserir Imagem
         </Button>
       </div>
       
+      {/* ÁREA DE TEXTO */}
       <EditorContent editor={editor} />
     </div>
   );
