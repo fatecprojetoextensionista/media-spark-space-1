@@ -23,6 +23,7 @@ import AdminArticles from "./pages/admin/AdminArticles";
 import AdminVideos from "./pages/admin/AdminVideos";
 import AdminCategories from "./pages/admin/AdminCategories";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -57,6 +58,8 @@ const App = () => (
               <Route path="articles" element={<AdminArticles />} />
               <Route path="videos" element={<AdminVideos />} />
               <Route path="categories" element={<AdminCategories />} />
+              <Route path="authors" element={<AdminAuthors />} /> {/* <-- ADICIONE ESTA LINHA */}
+              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
