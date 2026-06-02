@@ -9,6 +9,7 @@ import { ProtectedAdmin } from "@/components/admin/ProtectedAdmin";
 import Home from "./pages/Home";
 import Article from "./pages/Article";
 import Video from "./pages/Video"; // <--- IMPORTANTE: Importamos a nova página de vídeo
+import AdminAuthors from "./pages/admin/AdminAuthors";
 import Category from "./pages/Category";
 import SearchPage from "./pages/SearchPage";
 import About from "./pages/About";
