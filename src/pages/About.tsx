@@ -14,14 +14,14 @@ import equipeImg from "@/assets/grupotec.png";
 // --- SUGESTÃO DE IMPORTAÇÃO DOS SLIDES DO SEU MANUAL ---
 // Depois que você exportar as páginas do TECHIN MANUAL.pdf como imagem, 
 // salve-as na sua pasta de assets e importe-as seguindo este padrão:
-import manualSlide1 from "@/assets/manual-slide1.png"; // Exemplo fictício, substitua pelos arquivos reais
-import manualSlide2 from "@/assets/manual-slide2.png"; 
+import manualSlide1 from "@/assets/slide1.png"; // Exemplo fictício, substitua pelos arquivos reais
+import manualSlide2 from "@/assets/slide2.png"; 
 
 export default function About() {
   // Array contendo os slides do seu manual de identidade visual
   const manualSlides = [
-    { id: 1, img: manualSlide1, alt: "Manual TechIn - Página 1" },
-    { id: 2, img: manualSlide2, alt: "Manual TechIn - Página 2" },
+    { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
+    { id: 2, img: Slide2, alt: "Manual TechIn - Página 2" },
     // Adicione os demais slides aqui conforme criar os arquivos de imagem
   ];
 
