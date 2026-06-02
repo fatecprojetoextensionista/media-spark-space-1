@@ -13,6 +13,17 @@ export default {
       },
     },
     extend: {
+      // === CONFIGURAÇÃO DO PADRÃO DOS ARTIGOS ===
+      typography: {
+        DEFAULT: {
+          css: {
+            p: {
+              textIndent: '2rem', // <-- Aqui está o famoso "TAB" na primeira linha
+            },
+          },
+        },
+      },
+      // =========================================
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         serif: ["Playfair Display", "Georgia", "serif"],
