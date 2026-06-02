@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
 import logoSymbolWhite from "@/assets/logo-symbol-white.png";
-import logoImg from "@/assets/TechIn logo.png"; // Mantida a importação oficial da logo
+import logoImg from "@/assets/logo.png"; // Mantida a importação oficial da logo
 
 // Lista de categorias normalizada para facilitar a manutenção
 const categories = [
@@ -46,7 +46,7 @@ export function PortalLayout() {
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
               {/* Logótipo Principal da Navegação */}
-              <img src={logoImg} alt="TechIn Logo" className="h-10 w-auto object-contain" />
+              <img src={logoImg} alt="Logo" className="h-10 w-auto object-contain" />
             </Link>
 
             {/* Desktop Nav: Links dinâmicos com feedback visual */}
