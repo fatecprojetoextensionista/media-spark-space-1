@@ -1,16 +1,18 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, FileText, Video, FolderTree, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, FileText, Video, FolderTree, LogOut, Home, UserCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 // Importando a imagem do logótipo para o painel administrativo
 import logoImg1 from "@/assets/logo-C7WwK5gX.png";
 
+// INTEGRADO: Adicionado o novo escopo "Autores" na lista de links da barra lateral
 const links = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
   { to: "/admin/articles", label: "Artigos", icon: FileText },
   { to: "/admin/videos", label: "Vídeos", icon: Video },
   { to: "/admin/categories", label: "Categorias", icon: FolderTree },
+  { to: "/admin/authors", label: "Autores", icon: UserCheck }, // <-- Nova linha integrada aqui
 ];
 
 export default function AdminLayout() {
