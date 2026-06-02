@@ -10,6 +10,9 @@ interface ArticleRow {
   excerpt: string | null;
   cover_image_url: string | null; 
   published_at: string | null;
+  // 1. Adicionamos os campos de autor na interface
+  author_name_manual: string | null;
+  group_authors: string | null;
 }
 
 interface VideoRow {
@@ -31,11 +34,10 @@ export default function Category() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Busca a categoria limpando espaços e ignorando maiúsculas (Essencial para UX)
         const { data: cat, error: catError } = await supabase
           .from("categories")
           .select("id, name")
-          .ilike("slug", (name || "").trim()) // Remove espaços invisíveis da URL
+          .ilike("slug", (name || "").trim())
           .maybeSingle();
 
         if (catError) throw catError;
@@ -50,11 +52,11 @@ export default function Category() {
 
         setCatName(cat.name);
 
-        // 2. Busca Artigos e Vídeos em paralelo para máxima performance
         const [artRes, vidRes] = await Promise.all([
           supabase
             .from("articles")
-            .select("id, title, slug, excerpt, cover_image_url, published_at")
+            // 2. Adicionamos author_name_manual e group_authors na busca
+            .select("id, title, slug, excerpt, cover_image_url, published_at, author_name_manual, group_authors")
             .eq("category_id", cat.id)
             .eq("status", "published")
             .order("published_at", { ascending: false }),
@@ -80,6 +82,14 @@ export default function Category() {
   }, [name]);
 
   const totalContent = articles.length + videos.length;
+
+  // Função para formatar o nome do autor corretamente (igual na Home)
+  const formatAuthorName = (article: ArticleRow) => {
+    const parts = [];
+    if (article.author_name_manual) parts.push(article.author_name_manual);
+    if (article.group_authors) parts.push(article.group_authors);
+    return parts.length > 0 ? parts.join(" & ") : "";
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -112,7 +122,8 @@ export default function Category() {
                     title={a.title}
                     excerpt={a.excerpt ?? ""}
                     category={catName}
-                    author=""
+                    // 3. Agora enviamos o nome formatado do autor em vez de ""
+                    author={formatAuthorName(a)}
                     date={a.published_at ? new Date(a.published_at).toLocaleDateString("pt-BR") : ""}
                     imageUrl={a.cover_image_url ?? undefined}
                   />
