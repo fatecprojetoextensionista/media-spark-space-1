@@ -1,5 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import Image from '@tiptap/extension-image'
 import { Button } from "@/components/ui/button"
 
 interface RichTextEditorProps {
@@ -9,7 +10,16 @@ interface RichTextEditorProps {
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'rounded-lg max-w-full h-auto my-4', // Deixa as imagens bonitas e responsivas
+        },
+      }),
+    ],
     content: value,
     onUpdate: ({ editor }) => {
       // Atualiza o estado do formulário sempre que o texto muda
@@ -24,6 +34,13 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
   });
 
   if (!editor) return null;
+
+  const addImage = () => {
+    const url = window.prompt('Cole a URL da imagem aqui:');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -68,6 +85,17 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
           Lista
+        </Button>
+        
+        {/* NOVO BOTÃO DE IMAGEM */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addImage}
+          className="ml-auto"
+        >
+          🖼️ Inserir Imagem
         </Button>
       </div>
       
