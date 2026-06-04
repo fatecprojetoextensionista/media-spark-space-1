@@ -6,7 +6,8 @@ import {
   CarouselContent, 
   CarouselItem, 
   CarouselNext, 
-  CarouselPrevious 
+  CarouselPrevious,
+  type CarouselOptions // Importando a tipagem exata aceita pelo componente
 } from "@/components/ui/carousel";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -67,9 +68,8 @@ export default function About() {
     { id: 10, img: Slide10, alt: "Manual TechIn - Página 10" },
   ];
 
-  // CORREÇÃO DEFINITIVA PARA O TYPESCRIPT:
-  // Definimos a propriedade 'loop' de forma nativa e sem coerção de tipos
-  const carouselOptions = {
+  // Configuração tipada explicitamente para evitar rejeição do TypeScript
+  const carouselOptions: CarouselOptions = {
     loop: true
   };
 
@@ -149,7 +149,7 @@ export default function About() {
           </div>
           
           <div className="w-full relative px-10">
-            {/* INTEGRADO: Passando a constante carouselOptions diretamente sem forçar tipos inline */}
+            {/* Aplicado carouselOptions com tipagem nativa do Shadcn */}
             <Carousel 
               opts={carouselOptions} 
               className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card"
@@ -190,116 +190,4 @@ export default function About() {
 
         {/* Seção da Equipe Técnica Original */}
         <div className="space-y-6">
-          <div className="flex items-center space-x-3 border-b border-border pb-2">
-            <Users className="text-primary" size={24} />
-            <h2 className="text-2xl font-bold tracking-tight">Equipe Técnica</h2>
-          </div>
-
-          <Card className="border-border bg-card shadow-sm overflow-hidden">
-            <div className="md:flex">
-              {/* Foto em Grupo */}
-              <div className="md:w-5/12 h-64 md:h-auto bg-muted relative">
-                <img
-                  src={equipeImg}
-                  alt="Foto da Equipe Técnica"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Nomes e Agradecimentos */}
-              <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold mb-3">Desenvolvedores e Designers</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
-                  </p>
-                  <ul className="space-y-2 font-medium text-foreground text-sm">
-                    <li>• Giovanna Miranda</li>
-                    <li>• Henrique Reche</li>
-                    <li>• Isabela Raíza</li>
-                    <li>• Raquel Barbosa</li>
-                    <li>• Sarah Ágata</li>
-                  </ul>
-                </div>
-
-                <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-auto">
-                  <h4 className="flex items-center font-bold text-primary mb-2 text-sm uppercase tracking-wider">
-                    <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Ao <strong>Professor Jean Laine</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* --- NOVA SEÇÃO DINÂMICA: AUTORES, DESENVOLVEDORES E ORIENTADORES (ABAIXO DA EQUIPE TÉCNICA) --- */}
-        {(orientadores.length > 0 || autores.length > 0 || desenvolvedores.length > 0) && (
-          <section className="space-y-12 pt-4">
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold tracking-tight text-primary">Créditos e Colaboradores</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-                Integrantes adicionais que participaram ativamente da pesquisa de conteúdo, programação estrutural e mentoria.
-              </p>
-            </div>
-
-            {/* Bloco de Orientadores */}
-            {orientadores.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Orientadores</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {orientadores.map(renderMemberCard)}
-                </div>
-              </div>
-            )}
-
-            {/* Bloco de Autores */}
-            {autores.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Autores</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {autores.map(renderMemberCard)}
-                </div>
-              </div>
-            )}
-
-            {/* Bloco de Desenvolvedores */}
-            {desenvolvedores.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Desenvolvedores</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {desenvolvedores.map(renderMemberCard)}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-      </div>
-    </div>
-  );
-}
-
-// Função auxiliar reutilizável para renderização de cada card de membro dinâmico
-function renderMemberCard(member: Author) {
-  return (
-    <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
-      <img
-        src={member.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
-        alt={member.name}
-        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
-      />
-      <div>
-        <h4 className="font-semibold text-lg leading-tight">{member.name}</h4>
-        <p className="text-xs text-muted-foreground capitalize mt-1 px-2 py-0.5 bg-secondary rounded-full inline-block">
-          {member.role_type}
-        </p>
-      </div>
-      
-      <div className="flex items-center space-x-3 pt-2">
-        {member.linkedin_url && (
-          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-            <Linkedin className="w-5 h-5" />
-          </a>
+          <div className="flex items-center space-x-3 border-b border-border pb-
