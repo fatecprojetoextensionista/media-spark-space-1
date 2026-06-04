@@ -231,7 +231,7 @@ export default function About() {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-bold tracking-tight text-primary">Créditos e Colaboradores</h2>
               <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-                Integrantes adicionais que participaram ativamente da pesquisa de conteúdo, programação estrutural e mentoria.
+                Conheçam todo o time responsável pela criação desse portal em questão de conteúdo, desenvolvimento e orientação.
               </p>
             </div>
 
