@@ -67,6 +67,12 @@ export default function About() {
     { id: 10, img: Slide10, alt: "Manual TechIn - Página 10" },
   ];
 
+  // CORREÇÃO DEFINITIVA PARA O TYPESCRIPT:
+  // Definimos a propriedade 'loop' de forma nativa e sem coerção de tipos
+  const carouselOptions = {
+    loop: true
+  };
+
   return (
     <div className="py-12 bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
@@ -143,7 +149,11 @@ export default function About() {
           </div>
           
           <div className="w-full relative px-10">
-            <Carousel className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card">
+            {/* INTEGRADO: Passando a constante carouselOptions diretamente sem forçar tipos inline */}
+            <Carousel 
+              opts={carouselOptions} 
+              className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card"
+            >
               <CarouselContent>
                 {manualSlides.map((slide) => (
                   <CarouselItem key={slide.id}>
@@ -170,7 +180,7 @@ export default function About() {
             </Carousel>
           </div>
 
-          {/* INTEGRADO: Créditos do Manual inseridos logo abaixo do Carrossel */}
+          {/* Créditos do Manual */}
           <div className="text-right px-10">
             <p className="text-xs text-muted-foreground italic">
               Desenvolvido por: Quéren Hapuque, Victoria Vieira Resende.
@@ -293,13 +303,3 @@ function renderMemberCard(member: Author) {
           <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
             <Linkedin className="w-5 h-5" />
           </a>
-        )}
-        {member.email && (
-          <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
-            <Mail className="w-5 h-5" />
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}4
