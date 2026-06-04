@@ -143,7 +143,8 @@ export default function About() {
           </div>
           
           <div className="w-full relative px-10">
-            <Carousel className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card">
+            {/* INTEGRADO: Adicionada a opção opts={{ loop: true }} para habilitar a rolagem infinita */}
+            <Carousel opts={{ loop: true }} className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card">
               <CarouselContent>
                 {manualSlides.map((slide) => (
                   <CarouselItem key={slide.id}>
@@ -275,31 +276,4 @@ export default function About() {
 // Função auxiliar reutilizável para renderização de cada card de membro dinâmico
 function renderMemberCard(member: Author) {
   return (
-    <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
-      <img
-        src={member.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
-        alt={member.name}
-        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
-      />
-      <div>
-        <h4 className="font-semibold text-lg leading-tight">{member.name}</h4>
-        <p className="text-xs text-muted-foreground capitalize mt-1 px-2 py-0.5 bg-secondary rounded-full inline-block">
-          {member.role_type}
-        </p>
-      </div>
-      
-      <div className="flex items-center space-x-3 pt-2">
-        {member.linkedin_url && (
-          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-            <Linkedin className="w-5 h-5" />
-          </a>
-        )}
-        {member.email && (
-          <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
-            <Mail className="w-5 h-5" />
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
+    <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:
