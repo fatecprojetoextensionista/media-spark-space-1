@@ -118,7 +118,7 @@ export default function About() {
               <CardTitle className="text-xl">Visão</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground leading-relaxed">
-              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonists da transformação digital e social.
+              Ser uma plataforma de referência em extensão universitária e divulgação científica no campo do Design e da Tecnologia. Buscamos consolidar o portal como um recurso educativo aberto essencial para a comunidade local e acadêmica, destacando o potencial dos alunos como protagonistas da transformação digital e social.
             </CardContent>
           </Card>
 
@@ -143,11 +143,7 @@ export default function About() {
           </div>
           
           <div className="w-full relative px-10">
-            {/* CORREÇÃO AQUI: Forçando o tipo booleano primitivo no loop para satisfazer o TypeScript */}
-            <Carousel 
-              opts={{ loop: true as boolean }} 
-              className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card"
-            >
+            <Carousel className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card">
               <CarouselContent>
                 {manualSlides.map((slide) => (
                   <CarouselItem key={slide.id}>
@@ -174,7 +170,7 @@ export default function About() {
             </Carousel>
           </div>
 
-          {/* Créditos do Manual */}
+          {/* INTEGRADO: Créditos do Manual inseridos logo abaixo do Carrossel */}
           <div className="text-right px-10">
             <p className="text-xs text-muted-foreground italic">
               Desenvolvido por: Quéren Hapuque, Victoria Vieira Resende.
@@ -209,3 +205,101 @@ export default function About() {
                   </p>
                   <ul className="space-y-2 font-medium text-foreground text-sm">
                     <li>• Giovanna Miranda</li>
+                    <li>• Henrique Reche</li>
+                    <li>• Isabela Raíza</li>
+                    <li>• Raquel Barbosa</li>
+                    <li>• Sarah Ágata</li>
+                  </ul>
+                </div>
+
+                <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-auto">
+                  <h4 className="flex items-center font-bold text-primary mb-2 text-sm uppercase tracking-wider">
+                    <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ao <strong>Professor Jean Laine</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* --- NOVA SEÇÃO DINÂMICA: AUTORES, DESENVOLVEDORES E ORIENTADORES (ABAIXO DA EQUIPE TÉCNICA) --- */}
+        {(orientadores.length > 0 || autores.length > 0 || desenvolvedores.length > 0) && (
+          <section className="space-y-12 pt-4">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-bold tracking-tight text-primary">Créditos e Colaboradores</h2>
+              <p className="text-muted-foreground max-w-xl mx-auto text-sm">
+                Integrantes adicionais que participaram ativamente da pesquisa de conteúdo, programação estrutural e mentoria.
+              </p>
+            </div>
+
+            {/* Bloco de Orientadores */}
+            {orientadores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Orientadores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {orientadores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+
+            {/* Bloco de Autores */}
+            {autores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Autores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {autores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+
+            {/* Bloco de Desenvolvedores */}
+            {desenvolvedores.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Desenvolvedores</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {desenvolvedores.map(renderMemberCard)}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// Função auxiliar reutilizável para renderização de cada card de membro dinâmico
+function renderMemberCard(member: Author) {
+  return (
+    <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
+      <img
+        src={member.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
+        alt={member.name}
+        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
+      />
+      <div>
+        <h4 className="font-semibold text-lg leading-tight">{member.name}</h4>
+        <p className="text-xs text-muted-foreground capitalize mt-1 px-2 py-0.5 bg-secondary rounded-full inline-block">
+          {member.role_type}
+        </p>
+      </div>
+      
+      <div className="flex items-center space-x-3 pt-2">
+        {member.linkedin_url && (
+          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+            <Linkedin className="w-5 h-5" />
+          </a>
+        )}
+        {member.email && (
+          <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
+            <Mail className="w-5 h-5" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}4
