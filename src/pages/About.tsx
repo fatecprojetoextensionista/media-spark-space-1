@@ -77,7 +77,7 @@ export default function About() {
             Sobre o Projeto
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Conheça a iniciativa acadêmica por trás do desenvolvimento do nosso portal de conteúdos.
+            Conheça a iniciativa acadêmica por trás do desenvolvimento do nosso portal TechIn.
           </p>
         </div>
 
