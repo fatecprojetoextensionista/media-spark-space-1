@@ -6,8 +6,7 @@ import {
   CarouselContent, 
   CarouselItem, 
   CarouselNext, 
-  CarouselPrevious,
-  type CarouselOptions // Importando a tipagem exata aceita pelo componente
+  CarouselPrevious 
 } from "@/components/ui/carousel";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -68,8 +67,8 @@ export default function About() {
     { id: 10, img: Slide10, alt: "Manual TechIn - Página 10" },
   ];
 
-  // Configuração tipada explicitamente para evitar rejeição do TypeScript
-  const carouselOptions: CarouselOptions = {
+  // CORREÇÃO: Usando a tipagem record genérica para evitar conflitos com o compilador
+  const carouselOptions: Record<string, any> = {
     loop: true
   };
 
@@ -149,7 +148,6 @@ export default function About() {
           </div>
           
           <div className="w-full relative px-10">
-            {/* Aplicado carouselOptions com tipagem nativa do Shadcn */}
             <Carousel 
               opts={carouselOptions} 
               className="w-full shadow-sm rounded-xl overflow-hidden border border-border bg-card"
@@ -190,4 +188,41 @@ export default function About() {
 
         {/* Seção da Equipe Técnica Original */}
         <div className="space-y-6">
-          <div className="flex items-center space-x-3 border-b border-border pb-
+          <div className="flex items-center space-x-3 border-b border-border pb-2">
+            <Users className="text-primary" size={24} />
+            <h2 className="text-2xl font-bold tracking-tight">Equipe Técnica</h2>
+          </div>
+
+          <Card className="border-border bg-card shadow-sm overflow-hidden">
+            <div className="md:flex">
+              {/* Foto em Grupo */}
+              <div className="md:w-5/12 h-64 md:h-auto bg-muted relative">
+                <img
+                  src={equipeImg}
+                  alt="Foto da Equipe Técnica"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Nomes e Agradecimentos */}
+              <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Desenvolvedores e Designers</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
+                  </p>
+                  <ul className="space-y-2 font-medium text-foreground text-sm">
+                    <li>• Giovanna Miranda</li>
+                    <li>• Henrique Reche</li>
+                    <li>• Isabela Raíza</li>
+                    <li>• Raquel Barbosa</li>
+                    <li>• Sarah Ágata</li>
+                  </ul>
+                </div>
+
+                <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-auto">
+                  <h4 className="flex items-center font-bold text-primary mb-2 text-sm uppercase tracking-wider">
+                    <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ao <strong>Professor Jean Laine</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
