@@ -58,13 +58,13 @@ export default function Auth() {
         <Tabs defaultValue="signin">
           <TabsList className="grid grid-cols-2 w-full mb-6">
             <TabsTrigger value="signin">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Registar</TabsTrigger>
+            <TabsTrigger value="signup">Registrar</TabsTrigger>
           </TabsList>
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Label htmlFor="email">E-mail</Label>
+                <Input id="email" type="email" value={e-mail} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="password">Palavra-passe</Label>
@@ -82,8 +82,8 @@ export default function Auth() {
                 <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
               </div>
               <div>
-                <Label htmlFor="email2">Email</Label>
-                <Input id="email2" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Label htmlFor="email2">E-mail</Label>
+                <Input id="email2" type="email" value={e-mail} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="password2">Palavra-passe</Label>
