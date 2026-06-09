@@ -58,7 +58,7 @@ export default function Auth() {
         <Tabs defaultValue="signin">
           <TabsList className="grid grid-cols-2 w-full mb-6">
             <TabsTrigger value="signin">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Registar</TabsTrigger>
+            <TabsTrigger value="signup">Registrar</TabsTrigger>
           </TabsList>
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
