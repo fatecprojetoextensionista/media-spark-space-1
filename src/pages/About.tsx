@@ -196,34 +196,6 @@ export default function About() {
                 />
               </div>
 
-              {/* Nomes e Agradecimentos */}
-              <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold mb-3">Desenvolvedores e Designers</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Nossa equipe foi responsável pela concepção visual, experiência do usuário e construção do código deste portal.
-                  </p>
-                  <ul className="space-y-2 font-medium text-foreground text-sm">
-                    <li>• Giovanna Miranda</li>
-                    <li>• Henrique Reche</li>
-                    <li>• Isabela Raíza</li>
-                    <li>• Raquel Barbosa</li>
-                    <li>• Sarah Ágata</li>
-                  </ul>
-                </div>
-
-                <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-auto">
-                  <h4 className="flex items-center font-bold text-primary mb-2 text-sm uppercase tracking-wider">
-                    <Heart size={16} className="mr-2" fill="currentColor" /> Agradecimento Especial
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Ao <strong>Professor Jean Laine</strong>, pela orientação, apoio contínuo e por nos guiar com maestria durante o desenvolvimento deste projeto.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
 
         {/* --- NOVA SEÇÃO DINÂMICA: AUTORES, DESENVOLVEDORES E ORIENTADORES (ABAIXO DA EQUIPE TÉCNICA) --- */}
         {(orientadores.length > 0 || autores.length > 0 || desenvolvedores.length > 0) && (
