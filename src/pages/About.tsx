@@ -178,24 +178,6 @@ export default function About() {
           </div>
         </div>
 
-        {/* Seção da Equipe Técnica Original */}
-        <div className="space-y-6">
-          <div className="flex items-center space-x-3 border-b border-border pb-2">
-            <Users className="text-primary" size={24} />
-            <h2 className="text-2xl font-bold tracking-tight">Equipe Técnica</h2>
-          </div>
-
-          <Card className="border-border bg-card shadow-sm overflow-hidden">
-            <div className="md:flex">
-              {/* Foto em Grupo */}
-              <div className="md:w-5/12 h-64 md:h-auto bg-muted relative">
-                <img
-                  src={equipeImg}
-                  alt="Foto da Equipe Técnica"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-
 
         {/* --- NOVA SEÇÃO DINÂMICA: AUTORES, DESENVOLVEDORES E ORIENTADORES (ABAIXO DA EQUIPE TÉCNICA) --- */}
         {(orientadores.length > 0 || autores.length > 0 || desenvolvedores.length > 0) && (
