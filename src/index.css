@@ -44,6 +44,25 @@
     --success: 142 72% 38%;
     --success-foreground: 0 0% 100%;
 
+    --badge: 0 74% 42%;
+    --badge-foreground: 0 0% 100%;
+
+    --hero-overlay: 222 47% 11%;
+
+    --count-1: 0 0% 100%;
+    --count-1-foreground: 215 16% 47%;
+    --count-2: 233 22% 24%;
+    --count-2-foreground: 210 40% 98%;
+    --count-3: 142 72% 38%;
+    --count-3-foreground: 220 30% 12%;
+    --count-4: 38 92% 55%;
+    --count-4-foreground: 220 30% 12%;
+
+    --rank-1: 233 22% 24%;
+    --rank-2: 142 72% 29%;
+    --rank-3: 0 74% 42%;
+    --rank-4: 215 16% 47%;
+
     /* SIDEBAR AJUSTADA PARA O NOVO TOM */
     --sidebar-background: 233 22% 20%;
     --sidebar-foreground: 210 20% 94%;
@@ -83,6 +102,16 @@
     --border: 220 20% 22%;
     --input: 220 20% 22%;
     --ring: 233 22% 40%;
+
+    --count-1: 220 25% 12%;
+    --count-1-foreground: 215 16% 60%;
+    --count-2: 233 22% 40%;
+    --count-2-foreground: 210 20% 94%;
+
+    --rank-1: 210 20% 94%;
+    --rank-2: 142 72% 38%;
+    --rank-3: 38 92% 55%;
+    --rank-4: 215 16% 60%;
 
     --sidebar-background: 220 30% 6%;
     --sidebar-foreground: 210 20% 90%;

@@ -70,6 +70,31 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        badge: {
+          DEFAULT: "hsl(var(--badge))",
+          foreground: "hsl(var(--badge-foreground))",
+        },
+        "hero-overlay": "hsl(var(--hero-overlay))",
+        "count-1": {
+          DEFAULT: "hsl(var(--count-1))",
+          foreground: "hsl(var(--count-1-foreground))",
+        },
+        "count-2": {
+          DEFAULT: "hsl(var(--count-2))",
+          foreground: "hsl(var(--count-2-foreground))",
+        },
+        "count-3": {
+          DEFAULT: "hsl(var(--count-3))",
+          foreground: "hsl(var(--count-3-foreground))",
+        },
+        "count-4": {
+          DEFAULT: "hsl(var(--count-4))",
+          foreground: "hsl(var(--count-4-foreground))",
+        },
+        "rank-1": "hsl(var(--rank-1))",
+        "rank-2": "hsl(var(--rank-2))",
+        "rank-3": "hsl(var(--rank-3))",
+        "rank-4": "hsl(var(--rank-4))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

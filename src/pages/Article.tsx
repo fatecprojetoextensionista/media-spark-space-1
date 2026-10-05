@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, TrendingUp, BookOpen, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Função para pegar as iniciais do autor (Ex: "Henrique Reche" vira "HR")
 const getInitials = (name: string) => {
   if (!name) return "EQ";
   return name
@@ -14,12 +13,30 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
+const registerView = async (articleId: string) => {
+  const key = `viewed:${articleId}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+  } catch (storageError) {
+    console.warn("sessionStorage indisponível, visualização contada sem deduplicação:", storageError);
+  }
+  const { error } = await supabase.rpc("increment_article_views", { _article_id: articleId });
+  if (error) {
+    console.error("Erro ao registrar visualização:", error);
+    try {
+      sessionStorage.removeItem(key);
+    } catch (storageError) {
+      console.warn("Não foi possível limpar a marca de visualização:", storageError);
+    }
+  }
+};
+
 export default function Article() {
   const { id } = useParams();
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // Estados para as barras laterais
   const [trending, setTrending] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -30,7 +47,6 @@ export default function Article() {
       
       setLoading(true);
       
-      // 1. Busca o artigo principal
       const { data: articleData, error: articleError } = await supabase
         .from("articles")
         .select("*, category:categories(name, slug, id)")
@@ -42,10 +58,8 @@ export default function Article() {
       setArticle(articleData);
 
       if (articleData) {
-        // Atualiza visualizações
-        await supabase.from("articles").update({ views: (articleData.views ?? 0) + 1 }).eq("id", articleData.id);
+        void registerView(articleData.id);
 
-        // 2. Busca Sugestões
         if (articleData.category) {
           const { data: suggestionsData } = await supabase
             .from("articles")
@@ -57,16 +71,26 @@ export default function Article() {
           setSuggestions(suggestionsData || []);
         }
 
-        // 3. Busca Artigos Em Alta
-        const { data: trendingData } = await supabase
+        const { data: trendingData, error: trendingError } = await supabase
           .from("articles")
           .select("title, slug, views")
           .eq("status", "published")
           .order("views", { ascending: false })
           .limit(4);
-        setTrending(trendingData || []);
+        if (trendingError) {
+          console.error("Erro ao buscar artigos em alta, usando os mais recentes:", trendingError);
+          const { data: recentData, error: recentError } = await supabase
+            .from("articles")
+            .select("title, slug")
+            .eq("status", "published")
+            .order("published_at", { ascending: false })
+            .limit(4);
+          if (recentError) console.error("Erro ao buscar artigos recentes:", recentError);
+          setTrending(recentData || []);
+        } else {
+          setTrending(trendingData || []);
+        }
 
-        // 4. Busca Categorias
         const { data: categoriesData } = await supabase
           .from("categories")
           .select("name, slug")
@@ -104,7 +128,6 @@ export default function Article() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* BARRA LATERAL ESQUERDA */}
         <aside className="hidden lg:block lg:col-span-3 space-y-8">
           <div className="sticky top-24">
             <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
@@ -130,7 +153,6 @@ export default function Article() {
           </div>
         </aside>
 
-        {/* CONTEÚDO PRINCIPAL (CENTRO) */}
         <main className="lg:col-span-6 bg-card border border-border p-6 sm:p-8 rounded-xl shadow-sm">
           {article.category && (
             <Link to={`/categoria/${article.category.slug}`} className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded mb-4">
@@ -156,20 +178,16 @@ export default function Article() {
             <img src={article.cover_image_url} alt={article.title} className="w-full rounded-lg mb-8 shadow-sm" />
           )}
 
-          {/* O texto justificado, escuro e sem espaços extra está a ser aplicado aqui: */}
           <div 
             className="prose prose-lg dark:prose-invert max-w-none text-justify font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
-          {/* ================= CAIXA DE AUTOR SIMPLIFICADA (NO FIM DO ARTIGO) ================= */}
           {(article.author_name_manual || article.group_authors) && (
             <div className="mt-12 pt-6 border-t border-border">
               <div className="flex items-center gap-4">
                 
-                {/* FOTO OU INICIAIS */}
                 <div className="w-16 h-16 shrink-0 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative text-primary font-bold text-xl">
-                  {/* Lógica: Se não houver foto, mostra as iniciais */}
                   {getInitials(article.author_name_manual || article.group_authors)}
                   
                   {article.author_photo_url && (
@@ -177,7 +195,6 @@ export default function Article() {
                   )}
                 </div>
 
-                {/* NOME E LABEL */}
                 <div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Autor(es)</p>
                   <h4 className="text-lg font-bold text-foreground font-serif">
@@ -193,7 +210,6 @@ export default function Article() {
 
         </main>
 
-        {/* BARRA LATERAL DIREITA */}
         <aside className="hidden lg:block lg:col-span-3 space-y-8">
           <div className="sticky top-24 space-y-8">
             <div>

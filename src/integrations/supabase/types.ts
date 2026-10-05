@@ -263,6 +263,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_article_views: {
+        Args: { _article_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "editor" | "user"

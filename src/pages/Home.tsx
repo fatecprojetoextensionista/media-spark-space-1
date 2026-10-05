@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArticleCard } from "@/components/portal/ArticleCard";
 import { TrendingWidget, CategoriesWidget } from "@/components/portal/SidebarWidget";
 import { supabase } from "@/integrations/supabase/client";
-import heroBg from "@/assets/Fatec.jpeg";
+import { HeroCarousel } from "@/components/portal/HeroCarousel";
 
 interface ArticleRow {
   id: string;
@@ -14,8 +14,9 @@ interface ArticleRow {
   published_at: string | null;
   category_id: string | null;
   category?: { name: string; slug: string } | null;
-  author_name_manual: string | null; // Adicionado
-  group_authors: string | null; // Adicionado
+  views?: number | null;
+  author_name_manual: string | null;
+  group_authors: string | null;
 }
 
 interface VideoRow {
@@ -32,7 +33,6 @@ interface VideoRow {
 const formatDate = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" }) : "";
 
-// Função auxiliar para definir o nome do autor
 const getAuthorName = (article: ArticleRow) => {
   if (article.author_name_manual) return article.author_name_manual;
   if (article.group_authors) return article.group_authors;
@@ -41,6 +41,7 @@ const getAuthorName = (article: ArticleRow) => {
 
 export default function Home() {
   const [featured, setFeatured] = useState<ArticleRow | null>(null);
+  const [popular, setPopular] = useState<ArticleRow | null>(null);
   const [novidades, setNovidades] = useState<ArticleRow[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [noticias, setNoticias] = useState<ArticleRow[]>([]);
@@ -52,7 +53,6 @@ export default function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      // 1. Busca todas as categorias para pegar os IDs dinamicamente
       const { data: catsData } = await supabase.from("categories").select("id, name, slug");
       
       const idNoticias = catsData?.find(c => c.slug.toLowerCase() === "noticias")?.id;
@@ -61,7 +61,6 @@ export default function Home() {
       const idEventos = catsData?.find(c => c.slug.toLowerCase() === "eventos")?.id;
       const idRecursos = catsData?.find(c => c.slug.toLowerCase() === "recursos")?.id;
 
-      // 2. Busca todos os artigos publicados (Adicionado author_name_manual e group_authors)
       const { data: allArticles } = await supabase
         .from("articles")
         .select("id, title, slug, excerpt, cover_image_url, published_at, category_id, author_name_manual, group_authors, category:categories(name, slug)")
@@ -72,7 +71,24 @@ export default function Home() {
         setFeatured(allArticles[0] as any);
         setNovidades(allArticles.slice(1, 5) as any);
 
-        // Separação Inteligente das Seções por ID (com fallback por texto do slug)
+        const rows = allArticles as unknown as ArticleRow[];
+        const { data: viewsData, error: viewsError } = await supabase
+          .from("articles")
+          .select("id, views")
+          .eq("status", "published");
+
+        if (viewsError || !viewsData) {
+          console.error("Falha ao buscar visualizações:", viewsError);
+          setPopular(null);
+        } else {
+          const viewsById = new Map(
+            (viewsData as unknown as { id: string; views: number | null }[]).map((v) => [v.id, v.views ?? 0]),
+          );
+          const withViews = rows.map((a) => ({ ...a, views: viewsById.get(a.id) ?? 0 }));
+          const mostViewed = [...withViews].sort((a, b) => b.views - a.views);
+          setPopular(mostViewed.find((a) => a.id !== rows[0].id && a.views > 0) ?? null);
+        }
+
         const filterCategory = (id: string | undefined, slugText: string) => {
           if (id) return allArticles.filter(a => a.category_id === id).slice(0, 4);
           return allArticles.filter(a => a.category?.slug?.toLowerCase() === slugText).slice(0, 4);
@@ -85,7 +101,6 @@ export default function Home() {
         setRecursos(filterCategory(idRecursos, "recursos") as any);
       }
 
-      // 3. Seção de Vídeos
       const { data: vidData } = await supabase
         .from("videos")
         .select("id, title, slug, description, thumbnail_url, published_at, category:categories(name, slug), status")
@@ -94,7 +109,6 @@ export default function Home() {
         .limit(3);
       setVideos((vidData ?? []) as any);
 
-      // 4. Contador da Sidebar Lateral
       if (catsData) {
         const counts = await Promise.all(
           catsData.map(async (c) => {
@@ -121,30 +135,7 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* SEÇÃO HERO BANNER */}
-      <div className="relative h-[400px] overflow-hidden">
-        <img
-          src={featured?.cover_image_url || heroBg}
-          alt={featured?.title || "Portal"}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-        <div className="absolute inset-0 flex items-end pb-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="inline-block px-3 py-1 bg-destructive text-destructive-foreground text-xs font-bold rounded mb-3 tracking-wide">
-              DESTAQUE
-            </div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2 max-w-2xl leading-tight">
-              {featured?.title || "Bem-vindo ao Portal Institucional TechIn"}
-            </h1>
-            {featured && (
-              <Link to={`/artigo/${featured.slug}`} className="inline-flex px-5 py-2 bg-accent text-accent-foreground rounded-md text-sm font-semibold hover:opacity-90 transition-opacity">
-                Ler mais →
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
+      <HeroCarousel recent={featured} popular={popular} />
 
       {/* GRADE DE LAYOUT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
