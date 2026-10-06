@@ -3,12 +3,13 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PortalLayout } from "@/components/portal/PortalLayout";
 import { ProtectedAdmin } from "@/components/admin/ProtectedAdmin";
 import Home from "./pages/Home";
 import Article from "./pages/Article";
-import Video from "./pages/Video"; // <--- IMPORTANTE: Importamos a nova página de vídeo
+import Video from "./pages/Video";
 import AdminAuthors from "./pages/admin/AdminAuthors";
 import Category from "./pages/Category";
 import SearchPage from "./pages/SearchPage";
@@ -27,6 +28,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="techin-theme">
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -37,7 +39,6 @@ const App = () => (
             <Route element={<PortalLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/artigo/:id" element={<Article />} />
-              {/* ROTA CORRIGIDA: Agora aponta para o componente Video em vez de Article */}
               <Route path="/video/:id" element={<Video />} /> 
               <Route path="/categoria/:name" element={<Category />} />
               <Route path="/busca" element={<SearchPage />} />
@@ -58,7 +59,7 @@ const App = () => (
               <Route path="articles" element={<AdminArticles />} />
               <Route path="videos" element={<AdminVideos />} />
               <Route path="categories" element={<AdminCategories />} />
-              <Route path="authors" element={<AdminAuthors />} /> {/* <-- ADICIONE ESTA LINHA */}
+              <Route path="authors" element={<AdminAuthors />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -66,6 +67,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

@@ -8,9 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Pencil, Plus, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import RichTextEditor from "@/components/admin/RichTextEditor"; // Import do Editor Rico
+import RichTextEditor from "@/components/admin/RichTextEditor";
+import ArticlePreview from "@/components/admin/ArticlePreview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Article { 
   id: string; title: string; slug: string; excerpt: string | null; content: string; 
@@ -44,9 +47,8 @@ export default function AdminArticles() {
   const [form, setForm] = useState(empty);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingAuthor, setUploadingAuthor] = useState(false);
-  
-  // ESTADO PARA CONTROLAR SE MOSTRA O HTML OU O EDITOR VISUAL
-  const [isHtmlMode, setIsHtmlMode] = useState(false); 
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const [tab, setTab] = useState("edit");
 
   const load = async () => {
     const [a, c] = await Promise.all([
@@ -63,7 +65,8 @@ export default function AdminArticles() {
     setEditing(null); 
     setForm(empty); 
     setOpen(true); 
-    setIsHtmlMode(false); // Sempre abre no modo visual
+    setIsHtmlMode(false);
+    setTab("edit");
   };
   
   const openEdit = (a: Article) => {
@@ -75,7 +78,8 @@ export default function AdminArticles() {
       group_authors: a.group_authors ?? "",
       author_photo_url: a.author_photo_url ?? "",
     });
-    setIsHtmlMode(false); // Sempre abre no modo visual primeiro
+    setIsHtmlMode(false);
+    setTab("edit");
     setOpen(true);
   };
 
@@ -168,14 +172,34 @@ export default function AdminArticles() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} artigo</DialogTitle></DialogHeader>
+            <Tabs value={tab} onValueChange={setTab} className="pt-2">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="edit">Editar artigo</TabsTrigger>
+                <TabsTrigger value="preview">Visualizar artigo</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="preview" className="pt-4">
+                <ArticlePreview
+                  title={form.title}
+                  excerpt={form.excerpt}
+                  content={form.content}
+                  coverImageUrl={form.cover_image_url}
+                  categoryName={cats.find((c) => c.id === form.category_id)?.name ?? null}
+                  authorName={form.author_name_manual}
+                  groupAuthors={form.group_authors}
+                  authorPhotoUrl={form.author_photo_url}
+                  publishedAt={editing?.published_at ?? null}
+                />
+              </TabsContent>
+
+              <TabsContent value="edit" className="mt-0">
             <div className="space-y-4 pt-4">
-              
+
               <div>
                 <Label>Título</Label>
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editing ? form.slug : slugify(e.target.value) })} />
               </div>
 
-              {/* DADOS DO AUTOR */}
               <div className="bg-muted/30 p-4 rounded-lg border border-border/50 space-y-4">
                 <h4 className="text-sm font-semibold border-b pb-2">Informações do Autor</h4>
                 
@@ -207,7 +231,6 @@ export default function AdminArticles() {
 
               <div><Label>Resumo</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></div>
 
-              {/* === CONTEÚDO COM ALTERNÂNCIA (VISUAL / HTML) === */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label>Conteúdo do Artigo</Label>
@@ -236,7 +259,6 @@ export default function AdminArticles() {
                   />
                 )}
               </div>
-              {/* ================================================= */}
               
               <div>
                 <Label>Imagem de capa principal</Label>
@@ -276,6 +298,8 @@ export default function AdminArticles() {
 
               <Button onClick={save} className="w-full">Guardar Artigo</Button>
             </div>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
@@ -295,14 +319,14 @@ export default function AdminArticles() {
               <tr key={a.id} className="border-t border-border hover:bg-muted/20">
                 <td className="p-3 font-medium">{a.title}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${a.status === "published" ? "bg-green-100 text-green-800" : "bg-muted text-muted-foreground"}`}>
+                  <Badge variant={a.status === "published" ? "chip" : "draft"}>
                     {a.status === "published" ? "Publicado" : "Rascunho"}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-3 text-muted-foreground">{a.views}</td>
                 <td className="p-3 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(a)}><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(a.id)}><Trash2 size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(a)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${a.title}`}><Pencil size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(a.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${a.title}`}><Trash2 size={14} /></Button>
                 </td>
               </tr>
             ))}

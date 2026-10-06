@@ -114,7 +114,8 @@ export default function SearchPage() {
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar artigos, vídeos ou temas..." 
-            className="h-12 border-border focus-visible:ring-primary"
+            aria-label="Buscar artigos, vídeos ou temas"
+            className="h-12 focus-visible:ring-primary"
           />
           <Button type="submit" className="h-12 px-8 bg-accent text-accent-foreground hover:bg-accent/90">
             <Search className="mr-2 h-4 w-4" /> Buscar
@@ -211,7 +212,7 @@ export default function SearchPage() {
               <ul className="space-y-3">
                 {trending.map((item, idx) => (
                   <li key={idx} className="flex gap-3 items-start group">
-                    <span className="text-2xl font-bold text-muted-foreground/30 leading-none">{idx + 1}</span>
+                    <span aria-hidden="true" className="text-2xl font-bold text-muted-foreground leading-none">{idx + 1}</span>
                     <Link to={`/artigo/${item.slug}`} className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
                       {item.title}
                     </Link>

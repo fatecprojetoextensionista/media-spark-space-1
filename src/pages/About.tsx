@@ -165,8 +165,8 @@ export default function About() {
                 ))}
               </CarouselContent>
               
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover shadow-sm border border-border" />
+              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover hover:text-popover-foreground shadow-sm border border-border" />
+              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-popover/80 text-popover-foreground hover:bg-popover hover:text-popover-foreground shadow-sm border border-border" />
             </Carousel>
           </div>
 
@@ -226,7 +226,6 @@ export default function About() {
   );
 }
 
-// Função auxiliar reutilizável para renderização de cada card de membro dinâmico
 function renderMemberCard(member: Author) {
   return (
     <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
@@ -244,13 +243,23 @@ function renderMemberCard(member: Author) {
       
       <div className="flex items-center space-x-3 pt-2">
         {member.linkedin_url && (
-          <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-            <Linkedin className="w-5 h-5" />
+          <a
+            href={member.linkedin_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`LinkedIn de ${member.name} (abre em nova aba)`}
+            className="rounded-sm p-0.5 text-muted-foreground hover:text-primary transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ring"
+          >
+            <Linkedin className="w-5 h-5" aria-hidden="true" />
           </a>
         )}
         {member.email && (
-          <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
-            <Mail className="w-5 h-5" />
+          <a
+            href={`mailto:${member.email}`}
+            aria-label={`Enviar e-mail para ${member.name}`}
+            className="rounded-sm p-0.5 text-muted-foreground hover:text-primary transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ring"
+          >
+            <Mail className="w-5 h-5" aria-hidden="true" />
           </a>
         )}
       </div>

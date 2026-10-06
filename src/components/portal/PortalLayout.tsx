@@ -1,167 +1,176 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
-import logoSymbolWhite from "@/assets/logo-symbol-white.png";
-import logoImg from "@/assets/logo.png"; // Mantida a importação oficial da logo
+import { ThemeToggle } from "@/components/ThemeToggle";
+import logoWhite from "@/assets/logo-white.png";
+import logoImg from "@/assets/logo.png";
 
-// Lista de categorias normalizada para facilitar a manutenção
-const categories = [
+const NAV_ITEMS = [
+  { name: "Início", path: "/" },
   { name: "Notícias", path: "/categoria/noticias" },
   { name: "Tecnologia", path: "/categoria/tecnologia" },
   { name: "Institucional", path: "/categoria/institucional" },
   { name: "Eventos", path: "/categoria/eventos" },
   { name: "Recursos", path: "/categoria/recursos" },
+  { name: "Sobre", path: "/sobre" },
 ];
+
+const FOOTER_NAV = ["/", "/categoria/noticias", "/categoria/tecnologia", "/sobre"];
+const FOOTER_CATEGORIES = ["/categoria/institucional", "/categoria/eventos", "/categoria/recursos"];
+
+const DEFAULT_TITLE = "TechIn - Portal Institucional";
+const WRAP ="mx-auto w-full max-w-[1200px] px-4 sm:px-6";
+const FOCUS =
+  "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ring";
+const FOCUS_ON_DARK =
+  "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-brand-blue";
+const ROUND_BUTTON =
+  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-input bg-transparent text-foreground transition-colors hover:bg-muted";
+
+const itemsByPath = (paths: string[]) => NAV_ITEMS.filter((item) => paths.includes(item.path));
 
 export function PortalLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // UX: Função para destacar o link ativo no menu
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.toLowerCase().startsWith(path.toLowerCase());
   };
 
+  useEffect(() => {
+    const current = NAV_ITEMS.find((item) => item.path !== "/" && isActive(item.path));
+    document.title = current ? `${current.name} - TechIn` : DEFAULT_TITLE;
+  }, [location.pathname]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Top Bar */}
-      <div className="bg-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center text-primary-foreground/80 text-xs py-2">
-            <div className="flex gap-4">
-              <span></span>
-              <span className="hidden sm:inline"></span>
-            </div>
-            <div className="flex gap-4">
-              <Link to="/admin" className="hover:text-primary-foreground transition-colors">Área Admin</Link>
-            </div>
-          </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:font-semibold focus:text-primary-foreground focus:outline focus:outline-[3px] focus:outline-primary-foreground"
+      >
+        Pular para o conteúdo
+      </a>
+      <div className="bg-topbar text-topbar-foreground">
+        <div className={`${WRAP} flex justify-end py-1.5 text-xs`}>
+          <Link to="/admin" className={`rounded-sm hover:underline ${FOCUS_ON_DARK}`}>
+            Área Admin
+          </Link>
         </div>
       </div>
 
-      {/* Main Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center">
-              {/* Logótipo Principal da Navegação */}
-              <img src={logoImg} alt="Logo" className="h-10 w-auto object-contain" />
+      <header className="sticky top-0 z-50 border-b border-border bg-background">
+        <div className={WRAP}>
+          <div className="flex min-h-[72px] items-center justify-between gap-4">
+            <Link to="/" aria-label="TechIn, página inicial" className={`flex items-center rounded-sm ${FOCUS}`}>
+              <img src={logoImg} alt="" className="h-[46px] w-auto object-contain dark:hidden" />
+              <img src={logoWhite} alt="" className="hidden h-10 w-auto object-contain dark:block" />
             </Link>
 
-            {/* Desktop Nav: Links dinâmicos com feedback visual */}
-            <nav className="hidden lg:flex items-center gap-1">
-              <Link
-                to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/") && !location.pathname.includes("categoria")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
-                }`}
-              >
-                Início
-              </Link>
-              
-              {categories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  to={cat.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(cat.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground hover:bg-muted"
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-              <Link
-                to="/sobre"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive("/sobre")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
-                }`}
-              >
-                Sobre
-              </Link>
+            <nav aria-label="Principal" className="hidden lg:block">
+              <ul className="flex gap-1">
+                {NAV_ITEMS.map((item) => {
+                  const active = isActive(item.path);
+                  return (
+                    <li key={item.path}>
+                      <Link
+                        to={item.path}
+                        aria-current={active ? "page" : undefined}
+                        className={`relative block rounded-lg px-3 py-2 text-[0.9rem] transition-colors hover:bg-muted ${FOCUS} ${
+                          active
+                            ? "font-bold text-primary after:absolute after:inset-x-3 after:bottom-0.5 after:h-[3px] after:rounded-[3px] after:bg-gradient-to-r after:from-brand-blue after:to-primary"
+                            : "font-medium"
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </nav>
 
-            {/* Actions */}
             <div className="flex items-center gap-2">
-              {/* INTEGRADO: Ajustado o ícone da lupa para ser um Link direto e clicável para a página de busca */}
-              <Link
-                to="/busca"
-                className="p-2 rounded-md hover:bg-muted transition-colors text-foreground flex items-center justify-center"
-                aria-label="Página de pesquisa"
-              >
-                <Search size={18} />
-              </Link>
-              
-              <Link
-                to="/busca"
-                className="hidden md:inline-flex px-4 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                Pesquisar
+              <ThemeToggle className="max-sm:hidden" />
+              <Link to="/busca" aria-label="Pesquisar no portal" className={`${ROUND_BUTTON} ${FOCUS}`}>
+                <Search size={18} aria-hidden="true" />
               </Link>
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="menu-mobile"
+                aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                className={`${ROUND_BUTTON} lg:hidden ${FOCUS}`}
               >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
               </button>
             </div>
           </div>
 
-          {/* Mobile Nav */}
           {mobileMenuOpen && (
-            <nav className="lg:hidden pb-4 space-y-1 animate-fade-in border-t border-border mt-2 pt-2">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Início</Link>
-              {categories.map((cat) => (
-                <Link key={cat.name} to={cat.path} onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">{cat.name}</Link>
-              ))}
-              <Link to="/sobre" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 rounded-md hover:bg-muted">Sobre</Link>
+            <nav id="menu-mobile" aria-label="Principal" className="mt-2 animate-fade-in border-t border-border pb-4 pt-2 lg:hidden">
+              <ul className="space-y-1">
+                {NAV_ITEMS.map((item) => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      aria-current={isActive(item.path) ? "page" : undefined}
+                      className={`block rounded-lg px-4 py-2 hover:bg-muted ${FOCUS} ${
+                        isActive(item.path) ? "font-bold text-primary" : "font-medium"
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <ThemeToggle className="mt-3 w-full sm:hidden" />
             </nav>
           )}
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1">
+      <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="bg-primary text-primary-foreground mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                {/* Símbolo Branco no Footer */}
-                <img src={logoSymbolWhite} alt="Símbolo do Portal" className="h-10 w-auto object-contain" />
-              </div>
-              <p className="text-sm text-primary-foreground/70">
-                Portal institutional TechIn para divulgação de notícias, articles, vídeos e recursos.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider">Categorias</h4>
-              <ul className="space-y-2 text-sm text-primary-foreground/70 font-sans">
-                {categories.map((cat) => (
-                  <li key={cat.name}>
-                    <Link to={cat.path} className="hover:text-primary-foreground transition-colors">
-                      {cat.name}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <Link to="/sobre" className="hover:text-primary-foreground transition-colors">
-                    Sobre
+      <footer className="mt-auto bg-footer text-footer-foreground">
+        <div className={`${WRAP} grid gap-8 pb-8 pt-12 md:grid-cols-[1.4fr_1fr_1fr]`}>
+          <div>
+            <img src={logoWhite} alt="TechIn" className="mb-3.5 h-11 w-auto object-contain" />
+            <p className="max-w-[44ch] text-[0.9rem]">
+              Plataforma pública e interativa, projeto extensionista dos alunos de Design de Mídias Digitais da Fatec Carapicuíba.
+            </p>
+          </div>
+          <div>
+            <h2 className="mb-3 font-serif text-base text-footer-foreground">Navegação</h2>
+            <ul className="space-y-2 text-[0.9rem]">
+              {itemsByPath(FOOTER_NAV).map((item) => (
+                <li key={item.path}>
+                  <Link to={item.path} className={`rounded-sm hover:text-footer-foreground hover:underline ${FOCUS_ON_DARK}`}>
+                    {item.name}
                   </Link>
                 </li>
-              </ul>
-            </div>
+              ))}
+            </ul>
           </div>
+          <div>
+            <h2 className="mb-3 font-serif text-base text-footer-foreground">Categorias</h2>
+            <ul className="space-y-2 text-[0.9rem]">
+              {itemsByPath(FOOTER_CATEGORIES).map((item) => (
+                <li key={item.path}>
+                  <Link to={item.path} className={`rounded-sm hover:text-footer-foreground hover:underline ${FOCUS_ON_DARK}`}>
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="border-t border-footer-foreground/20 pt-[18px] text-[0.8125rem] md:col-span-3">
+            © {new Date().getFullYear()} TechIn · Tópicos Especiais em Mídias Digitais — DMD Fatec Carapicuíba
+          </p>
         </div>
       </footer>
     </div>

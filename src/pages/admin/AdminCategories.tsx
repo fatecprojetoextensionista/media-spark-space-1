@@ -56,7 +56,7 @@ export default function AdminCategories() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNew}><Plus size={16} className="mr-2" />Nova</Button>
+            <Button onClick={openNew}><Plus size={16} className="mr-2" />Nova categoria</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} categoria</DialogTitle></DialogHeader>
@@ -86,8 +86,8 @@ export default function AdminCategories() {
                 <td className="p-3 text-muted-foreground">{c.slug}</td>
                 <td className="p-3 text-muted-foreground truncate max-w-xs">{c.description}</td>
                 <td className="p-3 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(c)}><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(c.id)}><Trash2 size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(c)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${c.name}`}><Pencil size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(c.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${c.name}`}><Trash2 size={14} /></Button>
                 </td>
               </tr>
             ))}

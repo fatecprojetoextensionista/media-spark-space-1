@@ -174,11 +174,12 @@ export function HeroCarousel({ recent, popular }: HeroCarouselProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-hero-overlay via-hero-overlay/75 to-hero-overlay/20" />
                   <div className="relative max-w-7xl mx-auto px-16 md:px-20 2xl:px-8 w-full">
                     <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <div className="inline-block px-3 py-1 bg-badge text-badge-foreground text-xs font-bold rounded tracking-wide">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-chip text-chip-foreground text-xs font-bold rounded-full tracking-wider">
+                        <span className="h-2.5 w-2.5 shrink-0 rotate-45 bg-gradient-to-br from-brand-blue to-primary" aria-hidden="true" />
                         {slide.badge}
                       </div>
                       {slide.views !== undefined && slide.views > 0 && (
-                        <p className="flex items-center gap-1.5 text-xs font-medium text-white">
+                        <p className="flex items-center gap-1.5 rounded-full bg-chip px-3 py-1 text-xs font-semibold text-chip-foreground">
                           <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
                           <span>Mais acessado · {formatViews(slide.views)}</span>
                         </p>

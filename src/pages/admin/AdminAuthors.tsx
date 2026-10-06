@@ -20,8 +20,9 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { User, Trash2, Loader2, Linkedin, Mail, Plus } from "lucide-react";
+import { User, Trash2, Loader2, Linkedin, Mail, Plus, Pencil, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface Author {
   id: string;
@@ -37,8 +38,8 @@ export default function AdminAuthors() {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
-  // Campos do formulário estruturado
+
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [roleType, setRoleType] = useState<'autor' | 'desenvolvedor' | 'orientador'>("autor");
   const [photoUrl, setPhotoUrl] = useState("");
@@ -47,7 +48,6 @@ export default function AdminAuthors() {
 
   const { toast } = useToast();
 
-  // Buscar integrantes cadastrados
   const fetchAuthors = async () => {
     try {
       setLoading(true);
@@ -73,45 +73,72 @@ export default function AdminAuthors() {
     fetchAuthors();
   }, []);
 
-  // Cadastrar Novo Membro
+  const resetForm = () => {
+    setEditingId(null);
+    setName("");
+    setRoleType("autor");
+    setPhotoUrl("");
+    setLinkedinUrl("");
+    setEmail("");
+  };
+
+  const handleEdit = (author: Author) => {
+    setEditingId(author.id);
+    setName(author.name);
+    setRoleType(author.role_type);
+    setPhotoUrl(author.photo_url ?? "");
+    setLinkedinUrl(author.linkedin_url ?? "");
+    setEmail(author.email ?? "");
+    document.getElementById("name")?.focus();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
     try {
       setSubmitting(true);
-      
-      const { error } = await supabase
-        .from("authors")
-        .insert([
-          { 
-            name, 
-            role_type: roleType, 
-            photo_url: photoUrl || null,
-            linkedin_url: linkedinUrl || null,
-            email: email || null
-          }
-        ]);
 
-      if (error) throw error;
+      const payload = {
+        name,
+        role_type: roleType,
+        photo_url: photoUrl || null,
+        linkedin_url: linkedinUrl || null,
+        email: email || null,
+      };
 
-      toast({
-        title: "Sucesso!",
-        description: `${name} foi adicionado(a) com sucesso!`,
-      });
+      if (editingId) {
+        const { data, error } = await supabase
+          .from("authors")
+          .update(payload)
+          .eq("id", editingId)
+          .select();
 
-      // Limpar campos do formulário
-      setName("");
-      setRoleType("autor");
-      setPhotoUrl("");
-      setLinkedinUrl("");
-      setEmail("");
-      
-      // Atualizar lista em tempo real
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error("Nenhum registro foi atualizado. Verifique a permissão de edição no banco.");
+        }
+
+        toast({
+          title: "Sucesso!",
+          description: `${name} foi atualizado(a) com sucesso!`,
+        });
+      } else {
+        const { error } = await supabase.from("authors").insert([payload]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso!",
+          description: `${name} foi adicionado(a) com sucesso!`,
+        });
+      }
+
+      resetForm();
       fetchAuthors();
     } catch (error: any) {
       toast({
-        title: "Erro ao cadastrar",
+        title: editingId ? "Erro ao atualizar" : "Erro ao cadastrar",
         description: error.message,
         variant: "destructive",
       });
@@ -120,7 +147,6 @@ export default function AdminAuthors() {
     }
   };
 
-  // Remover Integrante
   const handleDelete = async (id: string, authorName: string) => {
     if (!confirm(`Tem certeza que deseja remover ${authorName}?`)) return;
 
@@ -138,6 +164,7 @@ export default function AdminAuthors() {
       });
       
       setAuthors(authors.filter(author => author.id !== id));
+      if (editingId === id) resetForm();
     } catch (error: any) {
       toast({
         title: "Erro ao remover",
@@ -156,17 +183,17 @@ export default function AdminAuthors() {
         </p>
       </div>
 
-      {/* Grade Responsiva: Formulário à esquerda e Tabela à direita em telas grandes */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* Painel de Cadastro */}
+
         <Card className="lg:col-span-1 border-border bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Plus size={18} className="text-primary" />
-              Novo Integrante
+              {editingId ? <Pencil size={18} className="text-primary" /> : <Plus size={18} className="text-primary" />}
+              {editingId ? "Editar Integrante" : "Novo Integrante"}
             </CardTitle>
-            <CardDescription>Preencha os dados do colaborador.</CardDescription>
+            <CardDescription>
+              {editingId ? "Altere os dados e salve." : "Preencha os dados do colaborador."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -233,14 +260,19 @@ export default function AdminAuthors() {
                     Salvando...
                   </>
                 ) : (
-                  "Adicionar à Equipe"
+                  editingId ? "Salvar Alterações" : "Adicionar à Equipe"
                 )}
               </Button>
+              {editingId && (
+                <Button type="button" variant="outline" className="w-full" onClick={resetForm} disabled={submitting}>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancelar edição
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
 
-        {/* Tabela de Listagem e Visualização */}
         <Card className="lg:col-span-2 border-border bg-card shadow-sm h-full">
           <CardHeader>
             <CardTitle className="text-lg">Integrantes Registrados</CardTitle>
@@ -264,7 +296,7 @@ export default function AdminAuthors() {
                       <TableHead>Nome</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Redes / Contato</TableHead>
-                      <TableHead className="w-[80px] text-right">Ações</TableHead>
+                      <TableHead className="w-[110px] text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -278,13 +310,9 @@ export default function AdminAuthors() {
                         </TableCell>
                         <TableCell className="font-medium text-sm">{author.name}</TableCell>
                         <TableCell>
-                          <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium capitalize inline-block ${
-                            author.role_type === 'orientador' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                            author.role_type === 'desenvolvedor' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          }`}>
+                          <Badge variant={author.role_type === "orientador" ? "chip" : author.role_type} className="capitalize">
                             {author.role_type}
-                          </span>
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3 text-muted-foreground">
@@ -301,10 +329,20 @@ export default function AdminAuthors() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-action-edit hover:bg-secondary hover:text-action-edit h-8 w-8"
+                            aria-label={`Editar ${author.name}`}
+                            onClick={() => handleEdit(author)}
+                          >
+                            <Pencil size={15} />
+                          </Button>
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+                            aria-label={`Remover ${author.name}`}
+                            className="text-action-delete hover:bg-secondary hover:text-action-delete h-8 w-8"
                             onClick={() => handleDelete(author.id, author.name)}
                           >
                             <Trash2 size={15} />

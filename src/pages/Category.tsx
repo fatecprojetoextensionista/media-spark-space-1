@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArticleCard } from "@/components/portal/ArticleCard";
+import { ArticleCard, CoverArt } from "@/components/portal/ArticleCard";
 
 interface ArticleRow {
   id: string; 
@@ -132,7 +132,6 @@ export default function Category() {
             </div>
           )}
 
-          {/* SEÇÃO DE VÍDEOS */}
           {videos.length > 0 && (
             <div className="mb-12">
               <div className="flex items-center gap-4 mb-6">
@@ -141,16 +140,24 @@ export default function Category() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {videos.map((v) => (
-                  <Link key={v.id} to={`/video/${v.slug}`} className="group block">
+                  <Link
+                    key={v.id}
+                    to={`/video/${v.slug}`}
+                    className="group block rounded-lg focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ring"
+                  >
                     <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
                       <div className="relative aspect-video">
-                        <img 
-                          src={v.thumbnail_url || "/placeholder.svg"} 
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          alt={v.title}
-                        />
+                        {v.thumbnail_url ? (
+                          <img
+                            src={v.thumbnail_url}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            alt=""
+                          />
+                        ) : (
+                          <CoverArt seed={v.slug} className="h-full w-full" />
+                        )}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                          <div className="w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center shadow-lg font-sans">
+                          <div aria-hidden="true" className="w-10 h-10 bg-accent text-accent-foreground rounded-full flex items-center justify-center shadow-lg font-sans">
                             ▶
                           </div>
                         </div>
@@ -167,7 +174,6 @@ export default function Category() {
             </div>
           )}
 
-          {/* ESTADO VAZIO */}
           {totalContent === 0 && (
             <div className="bg-card border border-border rounded-lg p-10 text-center text-muted-foreground font-serif italic">
               Ainda não temos publicações ou vídeos nesta categoria.

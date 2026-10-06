@@ -1,7 +1,22 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, BookOpen, Hash } from "lucide-react";
+import { ArrowLeft, BookOpen, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TrendingWidget } from "@/components/portal/SidebarWidget";
+
+interface TrendingRow {
+  title: string;
+  slug: string;
+  views?: number | null;
+  category?: { name: string } | null;
+}
+
+interface TrendingEntry {
+  id: string;
+  title: string;
+  category: string;
+  views?: number;
+}
 
 const getInitials = (name: string) => {
   if (!name) return "EQ";
@@ -37,7 +52,7 @@ export default function Article() {
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  const [trending, setTrending] = useState<any[]>([]);
+  const [trending, setTrending] = useState<TrendingEntry[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
@@ -71,24 +86,44 @@ export default function Article() {
           setSuggestions(suggestionsData || []);
         }
 
-        const { data: trendingData, error: trendingError } = await supabase
+        const { data: topData, error: topError } = await supabase
           .from("articles")
-          .select("title, slug, views")
+          .select("title, slug, views, category:categories(name)")
           .eq("status", "published")
+          .gt("views", 0)
           .order("views", { ascending: false })
+          .order("published_at", { ascending: false })
           .limit(4);
-        if (trendingError) {
-          console.error("Erro ao buscar artigos em alta, usando os mais recentes:", trendingError);
+        let trendingRows: TrendingRow[] = [];
+        if (topError) {
+          console.error("Erro ao buscar artigos em alta, usando os mais recentes:", topError);
+        } else {
+          trendingRows = (topData ?? []) as unknown as TrendingRow[];
+        }
+        if (trendingRows.length > 0) {
+          setTrending(
+            trendingRows.map((a) => ({
+              id: a.slug,
+              title: a.title,
+              category: a.category?.name || "Novidade",
+              views: a.views ?? 0,
+            })),
+          );
+        } else {
           const { data: recentData, error: recentError } = await supabase
             .from("articles")
-            .select("title, slug")
+            .select("title, slug, category:categories(name)")
             .eq("status", "published")
             .order("published_at", { ascending: false })
-            .limit(4);
+            .limit(5);
           if (recentError) console.error("Erro ao buscar artigos recentes:", recentError);
-          setTrending(recentData || []);
-        } else {
-          setTrending(trendingData || []);
+          setTrending(
+            ((recentData ?? []) as unknown as TrendingRow[]).slice(1, 5).map((a) => ({
+              id: a.slug,
+              title: a.title,
+              category: a.category?.name || "Novidade",
+            })),
+          );
         }
 
         const { data: categoriesData } = await supabase
@@ -114,6 +149,25 @@ export default function Article() {
     </div>
   );
 
+  const renderSuggestions = (className: string) => (
+    <div className={className}>
+      {suggestions.length > 0 ? (
+        suggestions.map((item, idx) => (
+          <Link to={`/artigo/${item.slug}`} key={idx} className="group flex flex-col gap-2">
+            {item.cover_image_url && (
+              <div className="w-full h-24 overflow-hidden rounded-md bg-muted">
+                <img src={item.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              </div>
+            )}
+            <h4 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h4>
+          </Link>
+        ))
+      ) : (
+        <p className="text-sm text-muted-foreground">Nenhuma sugestão no momento.</p>
+      )}
+    </div>
+  );
+
   const sanitizedContent = article.content ? article.content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') : '';
 
   return (
@@ -134,22 +188,7 @@ export default function Article() {
               <BookOpen size={18} className="mr-2 text-primary" />
               Sugestões de Leitura
             </h3>
-            <div className="space-y-4">
-              {suggestions.length > 0 ? (
-                suggestions.map((item, idx) => (
-                  <Link to={`/artigo/${item.slug}`} key={idx} className="group flex flex-col gap-2">
-                    {item.cover_image_url && (
-                      <div className="w-full h-24 overflow-hidden rounded-md bg-muted">
-                        <img src={item.cover_image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      </div>
-                    )}
-                    <h4 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h4>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma sugestão no momento.</p>
-              )}
-            </div>
+            {renderSuggestions("space-y-4")}
           </div>
         </aside>
 
@@ -179,7 +218,7 @@ export default function Article() {
           )}
 
           <div 
-            className="prose prose-lg dark:prose-invert max-w-none text-justify font-sans text-foreground/90" 
+            className="prose prose-lg dark:prose-invert dark:[--tw-prose-invert-bullets:hsl(var(--muted-foreground))] max-w-none text-justify font-sans text-foreground/90" 
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
@@ -191,7 +230,7 @@ export default function Article() {
                   {getInitials(article.author_name_manual || article.group_authors)}
                   
                   {article.author_photo_url && (
-                    <img src={article.author_photo_url} alt="Autor" className="absolute inset-0 w-full h-full object-cover" />
+                    <img src={article.author_photo_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
                   )}
                 </div>
 
@@ -210,24 +249,17 @@ export default function Article() {
 
         </main>
 
+        <section className="lg:hidden" aria-labelledby="sugestoes-mobile">
+          <h2 id="sugestoes-mobile" className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
+            <BookOpen size={18} className="mr-2 text-primary" aria-hidden="true" />
+            Sugestões de Leitura
+          </h2>
+          {renderSuggestions("grid grid-cols-1 sm:grid-cols-2 gap-4")}
+        </section>
+
         <aside className="hidden lg:block lg:col-span-3 space-y-8">
           <div className="sticky top-24 space-y-8">
-            <div>
-              <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">
-                <TrendingUp size={18} className="mr-2 text-primary" />
-                Em Alta
-              </h3>
-              <ul className="space-y-3">
-                {trending.map((item, idx) => (
-                  <li key={idx} className="flex gap-3 items-start group">
-                    <span className="text-2xl font-bold text-muted-foreground/30 leading-none">{idx + 1}</span>
-                    <Link to={`/artigo/${item.slug}`} className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <TrendingWidget items={trending} />
 
             <div>
               <h3 className="flex items-center text-lg font-bold border-b border-border pb-2 mb-4">

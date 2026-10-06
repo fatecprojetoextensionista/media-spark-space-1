@@ -1,40 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 30% 12%;
+    --background: 0 0% 100%;
+    --foreground: 240 12% 18.6%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 12%;
+    --card-foreground: 240 12% 18.6%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 12%;
+    --popover-foreground: 240 12% 18.6%;
 
-    /* COR PRINCIPAL AJUSTADA PARA #30334c */
-    --primary: 233 22% 24%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 262 35% 43%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 30% 95%;
-    --secondary-foreground: 220 30% 20%;
+    --secondary: 252 24% 96%;
+    --secondary-foreground: 240 12% 18.6%;
 
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 252 24% 96%;
+    --muted-foreground: 254 9% 37.5%;
 
-    /* COR DE DESTAQUE TAMBÉM AJUSTADA PARA O MESMO AZUL */
-    --accent: 233 22% 24%;
+    --accent: 262 35% 43%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 233 22% 24%;
+    --border: 252 20% 90%;
+    --input: 261 10% 55%;
+    --ring: 262 35% 43%;
 
     --radius: 0.5rem;
 
@@ -44,98 +40,153 @@
     --success: 142 72% 38%;
     --success-foreground: 0 0% 100%;
 
+    --action-edit: 142 72% 29%;
+    --action-delete: 0 84% 60%;
+    --role-autor: 142 55% 90%;
+    --role-autor-foreground: 142 72% 22%;
+    --role-dev: 196 85% 88%;
+    --role-dev-foreground: 200 80% 22%;
+
     --badge: 0 74% 42%;
     --badge-foreground: 0 0% 100%;
 
     --hero-overlay: 222 47% 11%;
+    --hero-gradient: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(252 24% 96%) 100%);
+
+    --chip: 264 43% 93%;
+    --chip-foreground: 260 40% 36%;
+
+    --brand-blue: 196 86% 59%;
+    --brand-blue-soft: 196 85% 76%;
+
+    --topbar: 240 12% 18.6%;
+    --topbar-foreground: 253 23% 92%;
+    --footer: 240 12% 18.6%;
+    --footer-foreground: 253 23% 92%;
 
     --count-1: 0 0% 100%;
-    --count-1-foreground: 215 16% 47%;
-    --count-2: 233 22% 24%;
-    --count-2-foreground: 210 40% 98%;
+    --count-1-foreground: 254 9% 37.5%;
+    --count-2: 262 35% 43%;
+    --count-2-foreground: 0 0% 100%;
     --count-3: 142 72% 38%;
     --count-3-foreground: 220 30% 12%;
     --count-4: 38 92% 55%;
     --count-4-foreground: 220 30% 12%;
 
-    --rank-1: 233 22% 24%;
+    --rank-1: 262 35% 43%;
     --rank-2: 142 72% 29%;
     --rank-3: 0 74% 42%;
-    --rank-4: 215 16% 47%;
+    --rank-4: 254 9% 37.5%;
 
-    /* SIDEBAR AJUSTADA PARA O NOVO TOM */
-    --sidebar-background: 233 22% 20%;
-    --sidebar-foreground: 210 20% 94%;
-    --sidebar-primary: 233 22% 24%;
+    --sidebar-background: 240 12% 18.6%;
+    --sidebar-foreground: 253 23% 92%;
+    --sidebar-primary: 262 35% 43%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 18%;
-    --sidebar-accent-foreground: 210 20% 94%;
-    --sidebar-border: 220 20% 22%;
-    --sidebar-ring: 233 22% 24%;
+    --sidebar-accent: 240 10% 25%;
+    --sidebar-accent-foreground: 253 23% 92%;
+    --sidebar-border: 240 8% 26%;
+    --sidebar-ring: 196 86% 59%;
   }
 
   .dark {
-    --background: 220 30% 8%;
-    --foreground: 210 20% 94%;
+    --background: 240 13.4% 13.1%;
+    --foreground: 252 26.3% 96.3%;
 
-    --card: 220 25% 12%;
-    --card-foreground: 210 20% 94%;
+    --card: 240 11.6% 18.6%;
+    --card-foreground: 252 26.3% 96.3%;
 
-    --popover: 220 25% 12%;
-    --popover-foreground: 210 20% 94%;
+    --popover: 240 11.6% 18.6%;
+    --popover-foreground: 252 26.3% 96.3%;
 
-    --primary: 233 22% 40%;
-    --primary-foreground: 210 20% 94%;
+    --primary: 261.3 62.3% 76.1%;
+    --primary-foreground: 240 13.4% 13.1%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 210 20% 94%;
+    --secondary: 240 12.5% 15.7%;
+    --secondary-foreground: 252 26.3% 96.3%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 215 16% 60%;
+    --muted: 240 12.5% 15.7%;
+    --muted-foreground: 256.7 13.6% 74.1%;
 
-    --accent: 233 22% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 196.3 85.7% 58.8%;
+    --accent-foreground: 240 13.4% 13.1%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 240 13.4% 13.1%;
 
-    --border: 220 20% 22%;
-    --input: 220 20% 22%;
-    --ring: 233 22% 40%;
+    --border: 247.5 11.9% 26.3%;
+    --input: 261 10% 55%;
+    --ring: 196.5 85% 76.5%;
 
-    --count-1: 220 25% 12%;
-    --count-1-foreground: 215 16% 60%;
-    --count-2: 233 22% 40%;
-    --count-2-foreground: 210 20% 94%;
+    --highlight: 38 92% 55%;
+    --highlight-foreground: 220 30% 12%;
 
-    --rank-1: 210 20% 94%;
-    --rank-2: 142 72% 38%;
+    --success: 142 70% 50%;
+    --success-foreground: 240 13.4% 13.1%;
+
+    --action-edit: 142 70% 50%;
+    --action-delete: 0 91% 71%;
+    --role-autor: 142 30% 20%;
+    --role-autor-foreground: 142 60% 75%;
+    --role-dev: 200 40% 20%;
+    --role-dev-foreground: 196 85% 76%;
+
+    --badge: 0 74% 42%;
+    --badge-foreground: 0 0% 100%;
+
+    --hero-overlay: 222 47% 11%;
+    --hero-gradient: linear-gradient(135deg, hsl(240 12.5% 15.7%) 0%, hsl(240 13.4% 13.1%) 100%);
+
+    --chip: 253.5 23.3% 26.1%;
+    --chip-foreground: 260 82.8% 88.6%;
+
+    --brand-blue: 196.3 85.7% 58.8%;
+    --brand-blue-soft: 196.5 85% 76.5%;
+
+    --topbar: 240 14.3% 9.6%;
+    --topbar-foreground: 253.8 19.7% 87.1%;
+    --footer: 240 14.3% 9.6%;
+    --footer-foreground: 253.8 19.7% 87.1%;
+
+    --count-1: 240 11.6% 18.6%;
+    --count-1-foreground: 256.7 13.6% 74.1%;
+    --count-2: 261.3 62.3% 76.1%;
+    --count-2-foreground: 240 13.4% 13.1%;
+    --count-3: 142 72% 38%;
+    --count-3-foreground: 220 30% 12%;
+    --count-4: 38 92% 55%;
+    --count-4-foreground: 220 30% 12%;
+
+    --rank-1: 261.3 62.3% 76.1%;
+    --rank-2: 142 70% 50%;
     --rank-3: 38 92% 55%;
-    --rank-4: 215 16% 60%;
+    --rank-4: 256.7 13.6% 74.1%;
 
-    --sidebar-background: 220 30% 6%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 233 22% 40%;
-    --sidebar-primary-foreground: 220 30% 6%;
-    --sidebar-accent: 220 25% 14%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 220 20% 16%;
-    --sidebar-ring: 233 22% 40%;
+    --sidebar-background: 240 14.3% 9.6%;
+    --sidebar-foreground: 253.8 19.7% 87.1%;
+    --sidebar-primary: 261.3 62.3% 76.1%;
+    --sidebar-primary-foreground: 240 13.4% 13.1%;
+    --sidebar-accent: 240 11.6% 18.6%;
+    --sidebar-accent-foreground: 252 26.3% 96.3%;
+    --sidebar-border: 247.5 11.9% 26.3%;
+    --sidebar-ring: 196.5 85% 76.5%;
   }
 }
 
 @layer base {
+  html {
+    scroll-padding-top: 6rem;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3 {
-    font-family: 'Playfair Display', serif;
+    @apply font-serif;
   }
 }
 
@@ -144,7 +195,7 @@
     text-wrap: balance;
   }
 }
-/* Força as imagens de dentro dos artigos a sempre aparecerem e ficarem responsivas */
+
 .prose img {
   display: block !important;
   max-width: 100% !important;
@@ -155,7 +206,6 @@
   visibility: visible !important;
 }
 
-/* Evita que o "TAB" (text-indent) que colocamos empurre as imagens caso elas sejam o primeiro item do parágrafo */
 .prose p:has(img) {
   text-indent: 0 !important;
 }

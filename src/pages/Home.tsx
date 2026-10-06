@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArticleCard } from "@/components/portal/ArticleCard";
+import { Play } from "lucide-react";
+import { ArticleCard, CoverArt } from "@/components/portal/ArticleCard";
 import { TrendingWidget, CategoriesWidget } from "@/components/portal/SidebarWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { HeroCarousel } from "@/components/portal/HeroCarousel";
@@ -39,10 +40,92 @@ const getAuthorName = (article: ArticleRow) => {
   return "Equipe";
 };
 
+const FOCUS_WITHIN =
+  "has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-ring";
+
+function SectionHead({ id, title, path }: { id: string; title: string; path?: string }) {
+  return (
+    <div className="relative mb-5 flex items-center justify-between gap-4 border-b border-border pb-2.5 after:absolute after:-bottom-px after:left-0 after:h-[3px] after:w-16 after:rounded-[3px] after:bg-gradient-to-r after:from-brand-blue after:to-primary">
+      <h2 id={id} className="font-serif text-2xl font-bold">
+        {title}
+      </h2>
+      {path && (
+        <Link
+          to={path}
+          className="rounded-sm text-[0.85rem] font-semibold text-primary underline underline-offset-[3px] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ring"
+        >
+          Ver mais<span className="sr-only"> em {title}</span>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function ArticleGrid({ articles, fallbackCategory }: { articles: ArticleRow[]; fallbackCategory: string }) {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2">
+      {articles.map((a) => (
+        <ArticleCard
+          key={a.id}
+          id={a.slug}
+          title={a.title}
+          excerpt={a.excerpt ?? ""}
+          category={a.category?.name || fallbackCategory}
+          author={getAuthorName(a)}
+          date={formatDate(a.published_at)}
+          imageUrl={a.cover_image_url ?? undefined}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CategorySection({ id, title, path, articles }: { id: string; title: string; path: string; articles: ArticleRow[] }) {
+  if (articles.length === 0) return null;
+  return (
+    <section aria-labelledby={id}>
+      <SectionHead id={id} title={title} path={path} />
+      <ArticleGrid articles={articles} fallbackCategory={title} />
+    </section>
+  );
+}
+
+function VideoCard({ video }: { video: VideoRow }) {
+  return (
+    <article
+      className={`group relative overflow-hidden rounded-[14px] border border-border bg-card transition-[transform,box-shadow] duration-200 hover:shadow-[0_1px_2px_hsl(var(--foreground)/0.06),0_8px_24px_hsl(var(--foreground)/0.07)] motion-safe:hover:-translate-y-[3px] ${FOCUS_WITHIN}`}
+    >
+      <div className="relative aspect-video overflow-hidden">
+        {video.thumbnail_url ? (
+          <img src={video.thumbnail_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <CoverArt seed={video.slug} className="h-full w-full" />
+        )}
+        <span className="absolute inset-0 m-auto grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_1px_2px_hsl(var(--foreground)/0.06),0_8px_24px_hsl(var(--foreground)/0.07)]">
+          <Play className="h-[22px] w-[22px] fill-current" aria-hidden="true" />
+        </span>
+      </div>
+      <span className="m-3 mb-0 inline-block rounded-full bg-chip px-2.5 py-[3px] text-xs font-bold text-chip-foreground">
+        {video.category?.name || "Vídeo"}
+      </span>
+      <h3 className="px-3 pb-3.5 pt-1.5 font-serif text-[0.95rem] font-semibold">
+        <Link
+          to={`/video/${video.slug}`}
+          className="underline-offset-[3px] after:absolute after:inset-0 group-hover:underline focus-visible:outline-none"
+        >
+          <span className="sr-only">Vídeo: </span>
+          {video.title}
+        </Link>
+      </h3>
+    </article>
+  );
+}
+
 export default function Home() {
   const [featured, setFeatured] = useState<ArticleRow | null>(null);
   const [popular, setPopular] = useState<ArticleRow | null>(null);
   const [novidades, setNovidades] = useState<ArticleRow[]>([]);
+  const [topViewed, setTopViewed] = useState<ArticleRow[]>([]);
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [noticias, setNoticias] = useState<ArticleRow[]>([]);
   const [tecnologia, setTecnologia] = useState<ArticleRow[]>([]);
@@ -50,6 +133,7 @@ export default function Home() {
   const [eventos, setEventos] = useState<ArticleRow[]>([]);
   const [recursos, setRecursos] = useState<ArticleRow[]>([]);
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
@@ -80,6 +164,7 @@ export default function Home() {
         if (viewsError || !viewsData) {
           console.error("Falha ao buscar visualizações:", viewsError);
           setPopular(null);
+          setTopViewed([]);
         } else {
           const viewsById = new Map(
             (viewsData as unknown as { id: string; views: number | null }[]).map((v) => [v.id, v.views ?? 0]),
@@ -87,6 +172,7 @@ export default function Home() {
           const withViews = rows.map((a) => ({ ...a, views: viewsById.get(a.id) ?? 0 }));
           const mostViewed = [...withViews].sort((a, b) => b.views - a.views);
           setPopular(mostViewed.find((a) => a.id !== rows[0].id && a.views > 0) ?? null);
+          setTopViewed(mostViewed.filter((a) => (a.views ?? 0) > 0).slice(0, 4));
         }
 
         const filterCategory = (id: string | undefined, slugText: string) => {
@@ -124,225 +210,57 @@ export default function Home() {
       }
     };
 
-    loadData();
+    loadData().finally(() => setLoading(false));
   }, []);
 
-  const trending = novidades.map((a) => ({
+  const trending = (topViewed.length > 0 ? topViewed : novidades).map((a) => ({
     id: a.slug,
     title: a.title,
     category: a.category?.name || "Novidade",
+    views: topViewed.length > 0 ? (a.views ?? 0) : undefined,
   }));
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="min-h-screen bg-background">
       <HeroCarousel recent={featured} popular={popular} />
 
-      {/* GRADE DE LAYOUT */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* COLUNA ESQUERDA VERTICAL */}
-          <div className="lg:col-span-2 space-y-12">
-            
-            {/* 1. SEÇÃO: NOVIDADES */}
-            <div>
-              <div className="flex items-center gap-4 mb-6 border-b pb-2">
-                <h2 className="text-2xl font-serif font-bold text-slate-900">Novidades</h2>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {novidades.map((a) => (
-                  <ArticleCard
-                    key={a.id}
-                    id={a.slug}
-                    title={a.title}
-                    excerpt={a.excerpt ?? ""}
-                    category={a.category?.name || "Novidade"}
-                    author={getAuthorName(a)}
-                    date={formatDate(a.published_at)}
-                    imageUrl={a.cover_image_url ?? undefined}
-                  />
+      <div className="mx-auto grid w-full max-w-[1200px] gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="space-y-12">
+          <section aria-labelledby="titulo-novidades">
+            <SectionHead id="titulo-novidades" title="Novidades" />
+            {loading ? (
+              <p role="status" className="text-muted-foreground">
+                Carregando…
+              </p>
+            ) : novidades.length === 0 ? (
+              <p className="text-muted-foreground">Nenhuma novidade publicada por enquanto.</p>
+            ) : (
+              <ArticleGrid articles={novidades} fallbackCategory="Novidade" />
+            )}
+          </section>
+
+          {videos.length > 0 && (
+            <section aria-labelledby="titulo-videos">
+              <SectionHead id="titulo-videos" title="Vídeos em Destaque" />
+              <div className="grid gap-4 sm:grid-cols-3">
+                {videos.map((v) => (
+                  <VideoCard key={v.id} video={v} />
                 ))}
               </div>
-            </div>
+            </section>
+          )}
 
-            {/* 2. SEÇÃO: VÍDEOS */}
-            {videos.length > 0 && (
-              <div>
-                <div className="flex items-center gap-4 mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Vídeos em Destaque</h2>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {videos.map((v) => (
-                    <Link key={v.id} to={`/video/${v.slug}`} className="group block">
-                      <div className="bg-card rounded-lg overflow-hidden border border-border hover:shadow-md transition-all duration-300">
-                        <div className="relative aspect-video">
-                          <img 
-                            src={v.thumbnail_url || "/placeholder.svg"} 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            alt={v.title}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <div className="w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center shadow-lg text-xs font-bold">
-                              ▶
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-3">
-                          <span className="text-[9px] uppercase tracking-wider text-accent font-bold">
-                            {v.category?.name || "Vídeo"}
-                          </span>
-                          <h3 className="font-semibold text-xs line-clamp-2 mt-0.5 group-hover:text-accent transition-colors leading-tight">
-                            {v.title}
-                          </h3>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 3. SEÇÃO: NOTÍCIAS */}
-            {noticias.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Notícias</h2>
-                  <Link to="/categoria/noticias" className="text-xs font-semibold text-accent hover:underline">
-                    Ver mais →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {noticias.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      id={a.slug}
-                      title={a.title}
-                      excerpt={a.excerpt ?? ""}
-                      category={a.category?.name || "Notícias"}
-                      author={getAuthorName(a)}
-                      date={formatDate(a.published_at)}
-                      imageUrl={a.cover_image_url ?? undefined}
-                  />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 4. SEÇÃO: TECNOLOGIA */}
-            {tecnologia.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Tecnologia</h2>
-                  <Link to="/categoria/tecnologia" className="text-xs font-semibold text-accent hover:underline">
-                    Ver mais →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {tecnologia.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      id={a.slug}
-                      title={a.title}
-                      excerpt={a.excerpt ?? ""}
-                      category={a.category?.name || "Tecnologia"}
-                      author={getAuthorName(a)}
-                      date={formatDate(a.published_at)}
-                      imageUrl={a.cover_image_url ?? undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 5. SEÇÃO: INSTITUCIONAL */}
-            {institucional.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Institucional</h2>
-                  <Link to="/categoria/institucional" className="text-xs font-semibold text-accent hover:underline">
-                    Ver mais →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {institucional.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      id={a.slug}
-                      title={a.title}
-                      excerpt={a.excerpt ?? ""}
-                      category={a.category?.name || "Institucional"}
-                      author={getAuthorName(a)}
-                      date={formatDate(a.published_at)}
-                      imageUrl={a.cover_image_url ?? undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 6. SEÇÃO: EVENTOS */}
-            {eventos.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Eventos</h2>
-                  <Link to="/categoria/eventos" className="text-xs font-semibold text-accent hover:underline">
-                    Ver mais →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {eventos.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      id={a.slug}
-                      title={a.title}
-                      excerpt={a.excerpt ?? ""}
-                      category={a.category?.name || "Eventos"}
-                      author={getAuthorName(a)}
-                      date={formatDate(a.published_at)}
-                      imageUrl={a.cover_image_url ?? undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 7. SEÇÃO: RECURSOS */}
-            {recursos.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6 border-b pb-2">
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">Recursos</h2>
-                  <Link to="/categoria/recursos" className="text-xs font-semibold text-accent hover:underline">
-                    Ver mais →
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {recursos.map((a) => (
-                    <ArticleCard
-                      key={a.id}
-                      id={a.slug}
-                      title={a.title}
-                      excerpt={a.excerpt ?? ""}
-                      category={a.category?.name || "Recursos"}
-                      author={getAuthorName(a)}
-                      date={formatDate(a.published_at)}
-                      imageUrl={a.cover_image_url ?? undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* COLUNA DIREITA: SIDEBAR */}
-          <div className="space-y-6 lg:border-l lg:pl-6 border-border h-fit">
-            <TrendingWidget items={trending} />
-            <CategoriesWidget categories={categories} />
-          </div>
-
+          <CategorySection id="titulo-noticias" title="Notícias" path="/categoria/noticias" articles={noticias} />
+          <CategorySection id="titulo-tecnologia" title="Tecnologia" path="/categoria/tecnologia" articles={tecnologia} />
+          <CategorySection id="titulo-institucional" title="Institucional" path="/categoria/institucional" articles={institucional} />
+          <CategorySection id="titulo-eventos" title="Eventos" path="/categoria/eventos" articles={eventos} />
+          <CategorySection id="titulo-recursos" title="Recursos" path="/categoria/recursos" articles={recursos} />
         </div>
+
+        <aside aria-label="Barra lateral" className="grid h-fit content-start gap-6">
+          <TrendingWidget items={trending} loading={loading} />
+          <CategoriesWidget categories={categories} loading={loading} />
+        </aside>
       </div>
     </div>
   );

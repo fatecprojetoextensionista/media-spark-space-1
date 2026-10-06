@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Auth() {
@@ -51,6 +52,9 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-lg p-8 shadow-lg">
+        <Button asChild variant="ghost" size="sm" className="mb-4 -ml-3 hover:bg-secondary hover:text-foreground">
+          <Link to="/"><ArrowLeft size={16} className="mr-2" />Voltar para a home</Link>
+        </Button>
         <div className="text-center mb-6">
           <Link to="/" className="text-2xl font-serif font-bold text-primary">PORTAL</Link>
           <p className="text-sm text-muted-foreground mt-1">Acesso à área administrativa</p>
@@ -64,11 +68,11 @@ export default function Auth() {
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <Label htmlFor="email">E-mail</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="password">Palavra-passe</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? "A entrar..." : "Entrar"}
@@ -79,15 +83,15 @@ export default function Auth() {
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
                 <Label htmlFor="name">Nome</Label>
-                <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+                <Input id="name" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="email2">Email</Label>
-                <Input id="email2" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email2" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="password2">Palavra-passe</Label>
-                <Input id="password2" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+                <Input id="password2" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
               </div>
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? "A criar..." : "Criar conta"}

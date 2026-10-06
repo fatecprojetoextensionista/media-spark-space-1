@@ -170,7 +170,7 @@ export default function Profile() {
         <form onSubmit={handleCreateMember} className="bg-card p-6 rounded-xl border border-border space-y-6 shadow-sm animate-in fade-in duration-200">
           <div className="flex items-center justify-between border-b pb-2">
             <h2 className="text-xl font-bold text-foreground">Novo Integrante da Equipe</h2>
-            <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="text-muted-foreground">
+            <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="text-muted-foreground hover:bg-secondary hover:text-foreground">
               Cancelar
             </Button>
           </div>
@@ -184,18 +184,20 @@ export default function Profile() {
                 <User className="w-12 h-12 text-muted-foreground" />
               )}
             </div>
-            <label className="cursor-pointer flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            <label className="cursor-pointer flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-input has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-ring">
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Upload className="w-4 h-4" aria-hidden="true" />}
               {avatarUrl ? "Alterar Foto" : "Adicionar Foto"}
-              <input type="file" accept="image/*" onChange={handleUploadAvatar} disabled={uploading} className="hidden" />
+              <input type="file" accept="image/*" onChange={handleUploadAvatar} disabled={uploading} className="sr-only" />
             </label>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nome de Exibição</label>
-              <Input 
-                value={displayName} 
+              <label htmlFor="perfil-nome" className="text-sm font-medium">Nome de Exibição</label>
+              <Input
+                id="perfil-nome"
+                autoComplete="name"
+                value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)} 
                 placeholder="Ex: Giovanna Miranda" 
                 required
@@ -203,9 +205,10 @@ export default function Profile() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Atuação / Biografia Curta</label>
-              <Textarea 
-                value={textBio} 
+              <label htmlFor="perfil-bio" className="text-sm font-medium">Atuação / Biografia Curta</label>
+              <Textarea
+                id="perfil-bio"
+                value={textBio}
                 onChange={(e) => setTextBio(e.target.value)} 
                 placeholder="Ex: Aluna de Design de Mídias Digitais da Fatec. Atuei no design de componentes e estilização da página Sobre."
                 rows={3}
@@ -214,21 +217,23 @@ export default function Profile() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1">
-                  <Linkedin size={14} className="text-blue-600" /> LinkedIn (URL)
+                <label htmlFor="perfil-linkedin" className="text-sm font-medium flex items-center gap-1">
+                  <Linkedin size={14} className="text-primary" aria-hidden="true" /> LinkedIn (URL)
                 </label>
-                <Input 
-                  value={linkedin} 
+                <Input
+                  id="perfil-linkedin"
+                  value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)} 
                   placeholder="https://linkedin.com/in/perfil" 
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1">
-                  <Github size={14} /> GitHub (URL)
+                <label htmlFor="perfil-github" className="text-sm font-medium flex items-center gap-1">
+                  <Github size={14} aria-hidden="true" /> GitHub (URL)
                 </label>
-                <Input 
-                  value={github} 
+                <Input
+                  id="perfil-github"
+                  value={github}
                   onChange={(e) => setGithub(e.target.value)} 
                   placeholder="https://github.com/usuario" 
                 />
@@ -280,7 +285,8 @@ export default function Profile() {
                   variant="ghost" 
                   size="icon" 
                   onClick={() => handleDeleteMember(member.id, member.display_name)}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
+                  className="text-action-delete hover:bg-secondary hover:text-action-delete flex-shrink-0"
+                  aria-label={`Remover ${member.display_name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

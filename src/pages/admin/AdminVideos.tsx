@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Pencil, Plus, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -227,18 +228,14 @@ export default function AdminVideos() {
               <tr key={v.id} className="hover:bg-muted/30 transition-colors">
                 <td className="p-4 font-medium">{v.title}</td>
                 <td className="p-4">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                    v.status === "published" || v.published 
-                    ? "bg-green-100 text-green-700 border border-green-200" 
-                    : "bg-amber-100 text-amber-700 border border-amber-200"
-                  }`}>
+                  <Badge variant={v.status === "published" || v.published ? "chip" : "draft"}>
                     {v.status === "published" || v.published ? "Publicado" : "Rascunho"}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-4 text-muted-foreground">{v.views || 0}</td>
                 <td className="p-4 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="hover:text-primary"><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(v.id)} className="hover:text-destructive"><Trash2 size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${v.title}`}><Pencil size={14} /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(v.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${v.title}`}><Trash2 size={14} /></Button>
                 </td>
               </tr>
             ))}

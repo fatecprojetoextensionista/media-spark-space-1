@@ -98,6 +98,7 @@ export default function Video() {
         {(video.video_url?.includes('youtube.com') || video.video_url?.includes('youtu.be')) ? (
           <iframe
             src={getEmbedUrl(video.video_url)}
+            title={`Vídeo: ${video.title}`}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -107,9 +108,9 @@ export default function Video() {
         )}
       </div>
 
-      <div className="prose prose-lg max-w-none">
+      <div className="prose prose-lg dark:prose-invert max-w-none">
         <h3 className="text-xl font-bold mb-4">Sobre este vídeo</h3>
-        <p className="text-slate-800 leading-loose whitespace-pre-wrap">
+        <p className="text-foreground/90 leading-loose whitespace-pre-wrap">
           {video.description}
         </p>
       </div>
