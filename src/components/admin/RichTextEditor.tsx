@@ -2,6 +2,10 @@ import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper } from
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { Button } from "@/components/ui/button"
+import { useRef, useState } from 'react'
+import { ImagePlus, Link2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { supabase } from '@/integrations/supabase/client'
 
 // =========================================================================
 // 1. COMPONENTE VISUAL DA IMAGEM COM O SLIDER DE TAMANHO
@@ -66,15 +70,15 @@ const CustomImage = Image.extend({
   }
 })
 
-// =========================================================================
-// 3. EDITOR PRINCIPAL
-// =========================================================================
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+  const inputImagemRef = useRef<HTMLInputElement>(null);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -85,12 +89,10 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      // Atualiza o formulário sempre que o redator altera algo
       onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        // Classes que deixam o editor visualmente igual ao resultado final (justificado, mesma fonte, etc)
         className: 'prose prose-sm dark:prose-invert min-h-[300px] max-w-none text-justify font-sans border border-input bg-background rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
       },
     },
@@ -98,43 +100,82 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   if (!editor) return null;
 
-  // Função simples apenas para pedir a URL da nova imagem
-  const addImage = () => {
+  const inserirImagem = (src: string) => {
+    editor.chain().focus().insertContent({ type: 'image', attrs: { src, width: 100 } }).run();
+  };
+
+  const addImageByUrl = () => {
     const url = window.prompt('Cole a URL da imagem aqui:');
-    if (url) {
-      editor.chain().focus().insertContent({
-        type: 'image',
-        attrs: {
-          src: url,
-          width: 100 // Nova imagem entra sempre com 100% de tamanho por padrão
-        }
-      }).run();
+    if (url) inserirImagem(url);
+  };
+
+  const enviarImagem = async (arquivo: File) => {
+    if (!arquivo.type.startsWith('image/')) {
+      toast.error('Escolha um arquivo de imagem (JPG, PNG, WebP ou GIF).');
+      return;
     }
+    if (arquivo.size > 10 * 1024 * 1024) {
+      toast.error('A imagem passa de 10 MB. Reduza o tamanho e tente de novo.');
+      return;
+    }
+    setEnviandoImagem(true);
+    const nomeLimpo = arquivo.name.toLowerCase().normalize('NFD').replace(/[^a-z0-9.]+/g, '-');
+    const caminho = `articles/${Date.now()}-${nomeLimpo}`;
+    const { error } = await supabase.storage.from('media').upload(caminho, arquivo, { contentType: arquivo.type });
+    setEnviandoImagem(false);
+    if (error) {
+      toast.error(`Erro ao enviar imagem: ${error.message}`);
+      return;
+    }
+    inserirImagem(supabase.storage.from('media').getPublicUrl(caminho).data.publicUrl);
+    toast.success('Imagem inserida no texto.');
   };
 
   return (
     <div className="flex flex-col gap-2">
-      {/* BARRA DE FERRAMENTAS */}
       <div className="flex flex-wrap gap-2 p-1 border border-input rounded-md bg-muted/50">
         <Button type="button" variant={editor.isActive('bold') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleBold().run()}>Negrito</Button>
         <Button type="button" variant={editor.isActive('italic') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleItalic().run()}>Itálico</Button>
         <Button type="button" variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>Título H2</Button>
         <Button type="button" variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>Título H3</Button>
         <Button type="button" variant={editor.isActive('bulletList') ? 'default' : 'outline'} size="sm" onClick={() => editor.chain().focus().toggleBulletList().run()}>Lista</Button>
-        
-        {/* BOTÃO DE INSERIR IMAGEM */}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addImage}
-          className="ml-auto bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
-        >
-          🖼️ Inserir Imagem
-        </Button>
+
+        <div className="ml-auto flex flex-wrap gap-2">
+          <input
+            ref={inputImagemRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const arquivo = e.target.files?.[0];
+              e.target.value = '';
+              if (arquivo) enviarImagem(arquivo);
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={enviandoImagem}
+            onClick={() => inputImagemRef.current?.click()}
+            className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
+          >
+            <ImagePlus className="mr-1 h-4 w-4" aria-hidden="true" />
+            {enviandoImagem ? 'Enviando...' : 'Enviar imagem'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addImageByUrl}
+            className="hover:bg-secondary hover:text-foreground"
+          >
+            <Link2 className="mr-1 h-4 w-4" aria-hidden="true" />
+            Imagem por link
+          </Button>
+        </div>
       </div>
-      
-      {/* ÁREA DE TEXTO */}
+
       <EditorContent editor={editor} />
     </div>
   );
