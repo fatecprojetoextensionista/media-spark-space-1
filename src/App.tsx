@@ -23,6 +23,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminArticles from "./pages/admin/AdminArticles";
 import AdminVideos from "./pages/admin/AdminVideos";
 import AdminCategories from "./pages/admin/AdminCategories";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 
 const queryClient = new QueryClient();
@@ -55,11 +56,12 @@ const App = () => (
                 </ProtectedAdmin>
               }
             >
-              <Route index element={<AdminOverview />} />
+              <Route index element={<ProtectedAdmin adminOnly><AdminOverview /></ProtectedAdmin>} />
               <Route path="articles" element={<AdminArticles />} />
-              <Route path="videos" element={<AdminVideos />} />
-              <Route path="categories" element={<AdminCategories />} />
-              <Route path="authors" element={<AdminAuthors />} />
+              <Route path="videos" element={<ProtectedAdmin adminOnly><AdminVideos /></ProtectedAdmin>} />
+              <Route path="categories" element={<ProtectedAdmin adminOnly><AdminCategories /></ProtectedAdmin>} />
+              <Route path="authors" element={<ProtectedAdmin adminOnly><AdminAuthors /></ProtectedAdmin>} />
+              <Route path="users" element={<ProtectedAdmin adminOnly><AdminUsers /></ProtectedAdmin>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

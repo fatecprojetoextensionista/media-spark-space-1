@@ -388,3 +388,20 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - Admin (`AdminAuthors.tsx`): campo "Semestre de entrada" (validação `\d{4}/[12]` pelo `pattern` do input) e coluna "Semestre" na tabela.
 - Sobre (`About.tsx`): `agruparPorSemestre` divide só a seção Autores em subtítulos "Turma AAAA/S", do mais recente ao mais antigo (comparação de texto, válida para o formato `AAAA/S`); autores sem semestre ficam em "Outros", por último. Se nenhum autor tem semestre, a seção aparece como antes, sem subtítulos. Orientadores e Desenvolvedores não foram agrupados.
 - `types.ts` ganhou `semestre_entrada` em `authors`.
+
+### Papel de autor (11/11/2026)
+
+- O papel de autor usa o valor `editor` do enum `app_role` que já existia (evita `ALTER TYPE`, que não pode ser usado na mesma transação do SQL Editor). Na interface ele aparece como "Autor". Não confundir com `authors.role_type = 'autor'`, que é só o cartão de créditos da página Sobre.
+- Regra escolhida pelo usuário: autor cria e edita só os próprios artigos, sempre como rascunho; só admin publica. Depois de publicado, o autor não edita nem apaga mais.
+- Migration `supabase/migrations/20261111120000_papel_autor.sql` (rodar no SQL Editor):
+  - apaga todas as policies de `public.articles` (por laço em `pg_policies`, porque o banco real diverge das migrations e os nomes são desconhecidos) e recria: leitura pública de `status = 'published'`; admin com tudo; autor (`editor`) lê, cria, edita e apaga só linhas com `author_id = auth.uid()` e `status = 'draft'` (o `WITH CHECK` também exige `published_at IS NULL`, então o autor não consegue publicar nem pela API)
+  - `GRANT EXECUTE` de `has_role` para `authenticated` (a migration antiga revogava, o que quebraria as policies novas)
+  - policy de `INSERT` em `storage.objects` para autor no bucket `media`, só nas pastas `articles/` e `authors/` (upload de capa e foto)
+  - funções `SECURITY DEFINER` `admin_listar_usuarios()` (lê `auth.users` com `display_name` do metadata e os papéis) e `admin_definir_papel(_user_id, _role, _ativo)`; as duas checam se quem chama é admin. Um admin não consegue tirar o próprio papel de admin. A tabela `profiles` não existe no banco real (REST dá 404), por isso o nome vem de `raw_user_meta_data`.
+- Front:
+  - `useAuth` lê todos os papéis do usuário e expõe `isAdmin`, `isAuthor` (`editor`) e `rolesLoaded`
+  - `ProtectedAdmin` deixa entrar admin ou autor; com `adminOnly`, o autor é mandado para `/admin/articles`. Em `App.tsx` só `articles` não é `adminOnly`
+  - `AdminLayout` esconde do autor os itens só de admin e mostra "Autor" no lugar de "Admin"
+  - `AdminArticles`: autor só vê os próprios artigos (`eq author_id`), o campo Estado fica travado em Rascunho com aviso, e artigos publicados aparecem sem botões de editar e apagar. `author_id` passou a ser gravado só na criação; antes, qualquer edição do admin trocava o dono do artigo para o admin. O salvar usa `.select("id")` e acusa erro se o RLS bloquear sem erro.
+  - Página nova `pages/admin/AdminUsers.tsx` (`/admin/users`, item "Usuários"): lista contas com busca e `Switch` de Autor e Administrador; dar admin pede confirmação; o próprio admin não pode se tirar. As RPCs não estão em `types.ts`, por isso passam por `chamarRpc` com tipo próprio.
+- Não testado em navegador nem contra o banco com um usuário autor.

@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, FileText, Video, FolderTree, LogOut, Home, UserCheck } from "lucide-react";
+import { LayoutDashboard, FileText, Video, FolderTree, LogOut, Home, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -7,16 +7,18 @@ import logoImg1 from "@/assets/logo-C7WwK5gX.png";
 import logoWhite from "@/assets/logo-white.png";
 
 const links = [
-  { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
-  { to: "/admin/articles", label: "Artigos", icon: FileText },
-  { to: "/admin/videos", label: "Vídeos", icon: Video },
-  { to: "/admin/categories", label: "Categorias", icon: FolderTree },
-  { to: "/admin/authors", label: "Autores", icon: UserCheck },
+  { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true, adminOnly: true },
+  { to: "/admin/articles", label: "Artigos", icon: FileText, adminOnly: false },
+  { to: "/admin/videos", label: "Vídeos", icon: Video, adminOnly: true },
+  { to: "/admin/categories", label: "Categorias", icon: FolderTree, adminOnly: true },
+  { to: "/admin/authors", label: "Autores", icon: UserCheck, adminOnly: true },
+  { to: "/admin/users", label: "Usuários", icon: Users, adminOnly: true },
 ];
 
 export default function AdminLayout() {
-  const { user, signOut } = useAuth();
-  
+  const { user, isAdmin, signOut } = useAuth();
+  const visibleLinks = links.filter((l) => isAdmin || !l.adminOnly);
+
   return (
     <div className="min-h-screen flex bg-muted/30">
       <aside className="sticky top-0 h-screen w-60 shrink-0 bg-card border-r border-border flex flex-col">
@@ -25,10 +27,10 @@ export default function AdminLayout() {
             <img src={logoImg1} alt="Logótipo do Portal" className="h-8 w-auto object-contain dark:hidden" />
             <img src={logoWhite} alt="Logótipo do Portal" className="hidden h-8 w-auto object-contain dark:block" />
           </Link>
-          <p className="text-xs text-muted-foreground mt-2">Admin</p>
+          <p className="text-xs text-muted-foreground mt-2">{isAdmin ? "Admin" : "Autor"}</p>
         </div>
         <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
-          {links.map(({ to, label, icon: Icon, end }) => (
+          {visibleLinks.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}

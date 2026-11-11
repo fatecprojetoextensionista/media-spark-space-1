@@ -39,7 +39,7 @@ const empty = {
 };
 
 export default function AdminArticles() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [items, setItems] = useState<Article[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [open, setOpen] = useState(false);
@@ -51,15 +51,19 @@ export default function AdminArticles() {
   const [tab, setTab] = useState("edit");
 
   const load = async () => {
+    let query = supabase.from("articles").select("*").order("created_at", { ascending: false });
+    if (!isAdmin && user) query = query.eq("author_id", user.id);
     const [a, c] = await Promise.all([
-      supabase.from("articles").select("*").order("created_at", { ascending: false }),
+      query,
       supabase.from("categories").select("id, name").order("name"),
     ]);
     setItems(a.data ?? []);
     setCats(c.data ?? []);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [isAdmin, user?.id]);
+
+  const canChange = (a: Article) => isAdmin || a.status !== "published";
 
   const openNew = () => { 
     setEditing(null); 
@@ -126,6 +130,7 @@ export default function AdminArticles() {
       return; 
     }
 
+    const status = isAdmin ? form.status : "draft";
     const payload: any = {
       title: form.title,
       slug: form.slug || slugify(form.title),
@@ -133,20 +138,21 @@ export default function AdminArticles() {
       content: form.content,
       cover_image_url: form.cover_image_url || null,
       category_id: form.category_id || null,
-      status: form.status,
-      author_id: user?.id,
+      status,
       author_name_manual: form.author_name_manual || null,
       group_authors: form.group_authors || null,
       author_photo_url: form.author_photo_url || null,
-      published_at: form.status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
+      published_at: status === "published" ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
-    
-    const { error } = editing
-      ? await supabase.from("articles").update(payload).eq("id", editing.id)
-      : await supabase.from("articles").insert(payload);
-      
+    if (!editing) payload.author_id = user?.id;
+
+    const { data, error } = editing
+      ? await supabase.from("articles").update(payload).eq("id", editing.id).select("id")
+      : await supabase.from("articles").insert(payload).select("id");
+
     if (error) return toast.error(error.message);
-    toast.success("Artigo salvo");
+    if (!data || data.length === 0) return toast.error("Sem permissão para salvar este artigo.");
+    toast.success(isAdmin ? "Artigo salvo" : "Rascunho salvo. Um administrador vai revisar e publicar.");
     setOpen(false);
     load();
   };
@@ -164,7 +170,9 @@ export default function AdminArticles() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-serif font-bold">Artigos</h1>
-          <p className="text-muted-foreground text-sm">Gerir publicações do portal</p>
+          <p className="text-muted-foreground text-sm">
+            {isAdmin ? "Gerir publicações do portal" : "Os seus artigos. Salve como rascunho; um administrador revisa e publica."}
+          </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -283,14 +291,19 @@ export default function AdminArticles() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Estado</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label htmlFor="estado-artigo">Estado</Label>
+                  <Select value={isAdmin ? form.status : "draft"} onValueChange={(v) => setForm({ ...form, status: v })} disabled={!isAdmin}>
+                    <SelectTrigger id="estado-artigo" aria-describedby={isAdmin ? undefined : "estado-ajuda"}><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="draft">Rascunho</SelectItem>
                       <SelectItem value="published">Publicado</SelectItem>
                     </SelectContent>
                   </Select>
+                  {!isAdmin && (
+                    <p id="estado-ajuda" className="mt-1 text-xs text-muted-foreground">
+                      Só um administrador pode publicar.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -325,8 +338,14 @@ export default function AdminArticles() {
                 </td>
                 <td className="p-3 text-muted-foreground">{a.views}</td>
                 <td className="p-3 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(a)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${a.title}`}><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(a.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${a.title}`}><Trash2 size={14} /></Button>
+                  {canChange(a) ? (
+                    <>
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(a)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${a.title}`}><Pencil size={14} /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => remove(a.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${a.title}`}><Trash2 size={14} /></Button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Publicado pelo admin</span>
+                  )}
                 </td>
               </tr>
             ))}
