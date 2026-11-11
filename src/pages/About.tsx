@@ -23,7 +23,6 @@ import Slide8 from "@/assets/slide8.png";
 import Slide9 from "@/assets/slide9.png";
 import Slide10 from "@/assets/slide10.png";
 
-// Interface para a tipagem dos autores dinâmicos do banco de dados
 interface Author {
   id: string;
   name: string;
@@ -31,6 +30,22 @@ interface Author {
   linkedin_url: string;
   email: string;
   role_type: 'autor' | 'desenvolvedor' | 'orientador';
+  semestre_entrada?: string | null;
+}
+
+const SEM_SEMESTRE = "Outros";
+
+function agruparPorSemestre(membros: Author[]) {
+  const grupos = new Map<string, Author[]>();
+  for (const membro of membros) {
+    const chave = membro.semestre_entrada?.trim() || SEM_SEMESTRE;
+    grupos.set(chave, [...(grupos.get(chave) ?? []), membro]);
+  }
+  return [...grupos.entries()].sort(([a], [b]) => {
+    if (a === SEM_SEMESTRE) return 1;
+    if (b === SEM_SEMESTRE) return -1;
+    return b.localeCompare(a);
+  });
 }
 
 export default function About() {
@@ -53,6 +68,7 @@ export default function About() {
   const autores = authors.filter(a => a.role_type === 'autor');
   const desenvolvedores = authors.filter(a => a.role_type === 'desenvolvedor');
   const orientadores = authors.filter(a => a.role_type === 'orientador');
+  const autoresPorSemestre = agruparPorSemestre(autores);
 
   const manualSlides = [
     { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
@@ -199,13 +215,27 @@ export default function About() {
               </div>
             )}
 
-            {/* Bloco de Autores */}
             {autores.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Autores</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {autores.map(renderMemberCard)}
-                </div>
+                {autoresPorSemestre.length === 1 && autoresPorSemestre[0][0] === SEM_SEMESTRE ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {autores.map(renderMemberCard)}
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    {autoresPorSemestre.map(([semestre, membros]) => (
+                      <div key={semestre} className="space-y-4">
+                        <h4 className="text-base font-semibold text-muted-foreground">
+                          {semestre === SEM_SEMESTRE ? semestre : `Turma ${semestre}`}
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {membros.map(renderMemberCard)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

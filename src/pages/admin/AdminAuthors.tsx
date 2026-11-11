@@ -31,6 +31,7 @@ interface Author {
   linkedin_url: string | null;
   email: string | null;
   role_type: 'autor' | 'desenvolvedor' | 'orientador';
+  semestre_entrada: string | null;
   created_at: string;
 }
 
@@ -45,6 +46,7 @@ export default function AdminAuthors() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [email, setEmail] = useState("");
+  const [semestre, setSemestre] = useState("");
 
   const { toast } = useToast();
 
@@ -80,6 +82,7 @@ export default function AdminAuthors() {
     setPhotoUrl("");
     setLinkedinUrl("");
     setEmail("");
+    setSemestre("");
   };
 
   const handleEdit = (author: Author) => {
@@ -89,6 +92,7 @@ export default function AdminAuthors() {
     setPhotoUrl(author.photo_url ?? "");
     setLinkedinUrl(author.linkedin_url ?? "");
     setEmail(author.email ?? "");
+    setSemestre(author.semestre_entrada ?? "");
     document.getElementById("name")?.focus();
   };
 
@@ -105,6 +109,7 @@ export default function AdminAuthors() {
         photo_url: photoUrl || null,
         linkedin_url: linkedinUrl || null,
         email: email || null,
+        semestre_entrada: semestre.trim() || null,
       };
 
       if (editingId) {
@@ -223,6 +228,22 @@ export default function AdminAuthors() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="semestre">Semestre de entrada</Label>
+                <Input
+                  id="semestre"
+                  value={semestre}
+                  onChange={(e) => setSemestre(e.target.value)}
+                  placeholder="Ex: 2026/1"
+                  pattern="\d{4}/[12]"
+                  title="Use o formato ano/semestre, por exemplo 2026/1"
+                  aria-describedby="semestre-ajuda"
+                />
+                <p id="semestre-ajuda" className="text-xs text-muted-foreground">
+                  Formato ano/semestre. Na página Sobre, os autores são agrupados por este valor.
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="photo">URL da Foto de Perfil</Label>
                 <Input 
                   id="photo" 
@@ -295,6 +316,7 @@ export default function AdminAuthors() {
                       <TableHead className="w-[70px]">Perfil</TableHead>
                       <TableHead>Nome</TableHead>
                       <TableHead>Categoria</TableHead>
+                      <TableHead>Semestre</TableHead>
                       <TableHead>Redes / Contato</TableHead>
                       <TableHead className="w-[110px] text-right">Ações</TableHead>
                     </TableRow>
@@ -313,6 +335,9 @@ export default function AdminAuthors() {
                           <Badge variant={author.role_type === "orientador" ? "chip" : author.role_type} className="capitalize">
                             {author.role_type}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {author.semestre_entrada || "-"}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3 text-muted-foreground">

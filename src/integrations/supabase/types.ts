@@ -85,6 +85,7 @@ export type Database = {
           linkedin_url: string
           email: string
           role_type: 'autor' | 'desenvolvedor' | 'orientador'
+          semestre_entrada: string | null
           created_at: string
         }
         Insert: {
@@ -95,6 +96,7 @@ export type Database = {
           email: string
           role_type: 'autor' | 'desenvolvedor' | 'orientador'
           created_at?: string
+          semestre_entrada?: string | null
         }
         Update: {
           id?: string
@@ -104,6 +106,7 @@ export type Database = {
           email?: string
           role_type?: 'autor' | 'desenvolvedor' | 'orientador'
           created_at?: string
+          semestre_entrada?: string | null
         }
         Relationships: []
       }
