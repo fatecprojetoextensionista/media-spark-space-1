@@ -68,7 +68,6 @@ export default function About() {
   const autores = authors.filter(a => a.role_type === 'autor');
   const desenvolvedores = authors.filter(a => a.role_type === 'desenvolvedor');
   const orientadores = authors.filter(a => a.role_type === 'orientador');
-  const autoresPorSemestre = agruparPorSemestre(autores);
 
   const manualSlides = [
     { id: 1, img: Slide1, alt: "Manual TechIn - Página 1" },
@@ -215,43 +214,43 @@ export default function About() {
               </div>
             )}
 
-            {autores.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Autores</h3>
-                {autoresPorSemestre.length === 1 && autoresPorSemestre[0][0] === SEM_SEMESTRE ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {autores.map(renderMemberCard)}
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    {autoresPorSemestre.map(([semestre, membros]) => (
-                      <div key={semestre} className="space-y-4">
-                        <h4 className="text-base font-semibold text-muted-foreground">
-                          {semestre === SEM_SEMESTRE ? semestre : `Turma ${semestre}`}
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                          {membros.map(renderMemberCard)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            {renderSecaoPorSemestre("Autores", autores)}
 
-            {/* Bloco de Desenvolvedores */}
-            {desenvolvedores.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">Desenvolvedores</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {desenvolvedores.map(renderMemberCard)}
-                </div>
-              </div>
-            )}
+            {renderSecaoPorSemestre("Desenvolvedores", desenvolvedores)}
           </section>
         )}
 
       </div>
+    </div>
+  );
+}
+
+function renderSecaoPorSemestre(titulo: string, membros: Author[]) {
+  if (membros.length === 0) return null;
+  const grupos = agruparPorSemestre(membros);
+  const semDivisao = grupos.length === 1 && grupos[0][0] === SEM_SEMESTRE;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xl font-semibold border-b pb-2 text-primary/90">{titulo}</h3>
+      {semDivisao ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {membros.map(renderMemberCard)}
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {grupos.map(([semestre, lista]) => (
+            <div key={semestre} className="space-y-4">
+              <h4 className="text-base font-semibold text-muted-foreground">
+                {semestre === SEM_SEMESTRE ? semestre : `Turma ${semestre}`}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {lista.map(renderMemberCard)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -295,4 +294,4 @@ function renderMemberCard(member: Author) {
       </div>
     </div>
   );
-}4
+}

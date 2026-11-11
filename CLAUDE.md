@@ -386,7 +386,7 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 
 - Coluna nova `authors.semestre_entrada` (texto, opcional, formato `2026/1`). Migration `supabase/migrations/20261111000000_authors_semestre_entrada.sql`; precisa ser rodada no SQL Editor antes do deploy, senão salvar integrante no admin falha (o `insert`/`update` envia a coluna).
 - Admin (`AdminAuthors.tsx`): campo "Semestre de entrada" (validação `\d{4}/[12]` pelo `pattern` do input) e coluna "Semestre" na tabela.
-- Sobre (`About.tsx`): `agruparPorSemestre` divide só a seção Autores em subtítulos "Turma AAAA/S", do mais recente ao mais antigo (comparação de texto, válida para o formato `AAAA/S`); autores sem semestre ficam em "Outros", por último. Se nenhum autor tem semestre, a seção aparece como antes, sem subtítulos. Orientadores e Desenvolvedores não foram agrupados.
+- Sobre (`About.tsx`): `agruparPorSemestre` divide as seções Autores e Desenvolvedores (função `renderSecaoPorSemestre`, desde 11/11/2026 também Desenvolvedores) em subtítulos "Turma AAAA/S", do mais recente ao mais antigo (comparação de texto, válida para o formato `AAAA/S`); autores sem semestre ficam em "Outros", por último. Se nenhum autor tem semestre, a seção aparece como antes, sem subtítulos. Orientadores não são agrupados.
 - `types.ts` ganhou `semestre_entrada` em `authors`.
 
 ### Papel de autor (11/11/2026)

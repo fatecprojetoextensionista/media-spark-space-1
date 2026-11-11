@@ -239,7 +239,7 @@ export default function AdminAuthors() {
                   aria-describedby="semestre-ajuda"
                 />
                 <p id="semestre-ajuda" className="text-xs text-muted-foreground">
-                  Formato ano/semestre. Na página Sobre, os autores são agrupados por este valor.
+                  Formato ano/semestre. Na página Sobre, autores e desenvolvedores são agrupados por este valor.
                 </p>
               </div>
 
