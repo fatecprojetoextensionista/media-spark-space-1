@@ -22,7 +22,7 @@ export function ProtectedAdmin({ children, adminOnly = false }: { children: Reac
       <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
         <h1 className="text-2xl font-bold mb-2">Acesso restrito</h1>
         <p className="text-muted-foreground max-w-md">
-          A sua conta ainda não tem permissão para escrever no portal. Peça a um administrador para lhe dar o papel de <strong>Autor</strong> na página Usuários do painel.
+          A sua conta foi bloqueada por um administrador. Fale com a equipe do portal se achar que é um engano.
         </p>
       </div>
     );

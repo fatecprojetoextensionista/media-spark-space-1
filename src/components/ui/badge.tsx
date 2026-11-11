@@ -16,6 +16,7 @@ const badgeVariants = cva(
         autor: "border-transparent bg-role-autor text-role-autor-foreground font-bold",
         desenvolvedor: "border-transparent bg-role-dev text-role-dev-foreground font-bold",
         draft: "border-border bg-muted text-muted-foreground",
+        review: "border-transparent bg-role-dev text-role-dev-foreground font-bold",
       },
     },
     defaultVariants: {

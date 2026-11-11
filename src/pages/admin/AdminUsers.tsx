@@ -3,8 +3,8 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UsuarioPortal {
   user_id: string;
@@ -15,7 +15,16 @@ interface UsuarioPortal {
   roles: string[];
 }
 
-type PapelGerenciado = "editor" | "admin";
+type Papel = "editor" | "admin" | "bloqueado";
+
+const ROTULO: Record<Papel, string> = {
+  editor: "Autor",
+  admin: "Administrador",
+  bloqueado: "Bloqueado",
+};
+
+const papelAtual = (roles: string[]): Papel =>
+  roles.includes("admin") ? "admin" : roles.includes("bloqueado") ? "bloqueado" : "editor";
 
 const chamarRpc = (nome: string, args?: Record<string, unknown>) =>
   (supabase.rpc as unknown as (
@@ -45,34 +54,18 @@ export default function AdminUsers() {
     carregar();
   }, []);
 
-  const alterarPapel = async (u: UsuarioPortal, papel: PapelGerenciado, ativo: boolean) => {
-    const chave = `${u.user_id}:${papel}`;
-    setSalvando(chave);
-    const { error } = await chamarRpc("admin_definir_papel", {
-      _user_id: u.user_id,
-      _role: papel,
-      _ativo: ativo,
-    });
+  const alterarPapel = async (u: UsuarioPortal, papel: Papel) => {
+    const nome = u.display_name || u.email;
+    if (papel === "admin" && !confirm(`Dar acesso total de administrador a ${nome}?`)) return;
+    setSalvando(u.user_id);
+    const { error } = await chamarRpc("admin_definir_papel", { _user_id: u.user_id, _role: papel });
     setSalvando(null);
     if (error) {
       toast.error(error.message);
       return;
     }
-    setUsuarios((lista) =>
-      lista.map((item) =>
-        item.user_id === u.user_id
-          ? {
-              ...item,
-              roles: ativo
-                ? [...new Set([...item.roles, papel])]
-                : item.roles.filter((r) => r !== papel),
-            }
-          : item,
-      ),
-    );
-    const nome = u.display_name || u.email;
-    const rotulo = papel === "admin" ? "Administrador" : "Autor";
-    toast.success(ativo ? `${nome} agora é ${rotulo}.` : `${nome} deixou de ser ${rotulo}.`);
+    setUsuarios((lista) => lista.map((item) => (item.user_id === u.user_id ? { ...item, roles: [papel] } : item)));
+    toast.success(`${nome} agora é ${ROTULO[papel]}.`);
   };
 
   const termo = busca.trim().toLowerCase();
@@ -87,8 +80,8 @@ export default function AdminUsers() {
       <div>
         <h1 className="text-2xl font-serif font-bold">Usuários</h1>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Pessoas que criaram conta no portal. Autores escrevem e editam os próprios artigos como rascunho;
-          administradores publicam e gerenciam todo o conteúdo.
+          Toda conta criada no portal já é Autor: escreve os próprios artigos e envia para revisão.
+          Administradores publicam e gerenciam todo o conteúdo. Contas bloqueadas não conseguem escrever.
         </p>
       </div>
 
@@ -119,8 +112,7 @@ export default function AdminUsers() {
                 <th scope="col" className="text-left p-3">E-mail</th>
                 <th scope="col" className="text-left p-3">Cadastro</th>
                 <th scope="col" className="text-left p-3">Último acesso</th>
-                <th scope="col" className="text-center p-3">Autor</th>
-                <th scope="col" className="text-center p-3">Administrador</th>
+                <th scope="col" className="text-left p-3 w-48">Papel</th>
               </tr>
             </thead>
             <tbody>
@@ -136,31 +128,28 @@ export default function AdminUsers() {
                     <td className="p-3 text-muted-foreground">{u.email}</td>
                     <td className="p-3 text-muted-foreground">{formatarData(u.created_at)}</td>
                     <td className="p-3 text-muted-foreground">{formatarData(u.last_sign_in_at)}</td>
-                    <td className="p-3 text-center">
-                      <Switch
-                        checked={u.roles.includes("editor")}
-                        disabled={salvando === `${u.user_id}:editor`}
-                        onCheckedChange={(v) => alterarPapel(u, "editor", v)}
-                        aria-label={`${nome} é autor`}
-                      />
-                    </td>
-                    <td className="p-3 text-center">
-                      <Switch
-                        checked={u.roles.includes("admin")}
-                        disabled={souEu || salvando === `${u.user_id}:admin`}
-                        onCheckedChange={(v) => {
-                          if (v && !confirm(`Dar acesso total de administrador a ${nome}?`)) return;
-                          alterarPapel(u, "admin", v);
-                        }}
-                        aria-label={`${nome} é administrador`}
-                      />
+                    <td className="p-3">
+                      <Select
+                        value={papelAtual(u.roles)}
+                        onValueChange={(v) => alterarPapel(u, v as Papel)}
+                        disabled={souEu || salvando === u.user_id}
+                      >
+                        <SelectTrigger aria-label={`Papel de ${nome}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="editor">Autor</SelectItem>
+                          <SelectItem value="admin">Administrador</SelectItem>
+                          <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
                   </tr>
                 );
               })}
               {filtrados.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                  <td colSpan={5} className="p-6 text-center text-muted-foreground">
                     Nenhum usuário encontrado.
                   </td>
                 </tr>

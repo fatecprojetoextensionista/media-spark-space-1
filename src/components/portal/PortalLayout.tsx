@@ -52,7 +52,10 @@ export function PortalLayout() {
         Pular para o conteúdo
       </a>
       <div className="bg-topbar text-topbar-foreground">
-        <div className={`${WRAP} flex justify-end py-1.5 text-xs`}>
+        <div className={`${WRAP} flex justify-end gap-4 py-1.5 text-xs`}>
+          <Link to="/admin/articles" className={`rounded-sm hover:underline ${FOCUS_ON_DARK}`}>
+            Área do Autor
+          </Link>
           <Link to="/admin" className={`rounded-sm hover:underline ${FOCUS_ON_DARK}`}>
             Área Admin
           </Link>

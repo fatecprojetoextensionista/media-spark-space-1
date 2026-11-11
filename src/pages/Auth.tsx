@@ -57,7 +57,10 @@ export default function Auth() {
         </Button>
         <div className="text-center mb-6">
           <Link to="/" className="text-2xl font-serif font-bold text-primary">PORTAL</Link>
-          <p className="text-sm text-muted-foreground mt-1">Acesso à área administrativa</p>
+          <p className="text-sm text-muted-foreground mt-1">Área do autor e administração</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Quer publicar um artigo? Crie uma conta, escreva o seu texto e envie para revisão.
+          </p>
         </div>
         <Tabs defaultValue="signin">
           <TabsList className="grid grid-cols-2 w-full mb-6">

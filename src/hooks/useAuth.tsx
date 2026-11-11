@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", uid);
     const roles = (data ?? []).map((r) => r.role as string);
     setIsAdmin(roles.includes("admin"));
-    setIsAuthor(roles.includes("editor"));
+    setIsAuthor(!roles.includes("bloqueado"));
     setRolesLoaded(true);
   };
 

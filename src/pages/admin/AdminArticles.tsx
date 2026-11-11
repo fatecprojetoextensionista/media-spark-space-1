@@ -33,7 +33,13 @@ const articleSchema = z.object({
   content: z.string().min(20, "O artigo está muito curto. Escreva algum conteúdo."),
 });
 
-const empty = { 
+const STATUS_LABEL: Record<string, string> = {
+  draft: "Rascunho",
+  review: "Em revisão",
+  published: "Publicado",
+};
+
+const empty = {
   title: "", slug: "", excerpt: "", content: "", cover_image_url: "", 
   category_id: "", status: "draft", author_name_manual: "", group_authors: "", author_photo_url: "" 
 };
@@ -57,7 +63,8 @@ export default function AdminArticles() {
       query,
       supabase.from("categories").select("id, name").order("name"),
     ]);
-    setItems(a.data ?? []);
+    const lista = (a.data ?? []) as unknown as Article[];
+    setItems(isAdmin ? [...lista].sort((x, y) => Number(y.status === "review") - Number(x.status === "review")) : lista);
     setCats(c.data ?? []);
   };
 
@@ -67,7 +74,7 @@ export default function AdminArticles() {
 
   const openNew = () => { 
     setEditing(null); 
-    setForm(empty); 
+    setForm({ ...empty, author_name_manual: isAdmin ? "" : (user?.user_metadata?.display_name ?? "") });
     setOpen(true); 
     setIsHtmlMode(false);
     setTab("edit");
@@ -121,7 +128,7 @@ export default function AdminArticles() {
     toast.success("Foto do autor atualizada");
   };
 
-  const save = async () => {
+  const save = async (statusAutor?: "draft" | "review") => {
     const validation = articleSchema.safeParse(form);
     
     if (!validation.success) {
@@ -130,7 +137,7 @@ export default function AdminArticles() {
       return; 
     }
 
-    const status = isAdmin ? form.status : "draft";
+    const status = isAdmin ? form.status : (statusAutor ?? "draft");
     const payload: any = {
       title: form.title,
       slug: form.slug || slugify(form.title),
@@ -152,7 +159,13 @@ export default function AdminArticles() {
 
     if (error) return toast.error(error.message);
     if (!data || data.length === 0) return toast.error("Sem permissão para salvar este artigo.");
-    toast.success(isAdmin ? "Artigo salvo" : "Rascunho salvo. Um administrador vai revisar e publicar.");
+    toast.success(
+      isAdmin
+        ? "Artigo salvo"
+        : status === "review"
+          ? "Artigo enviado para revisão. Um administrador vai avaliar e publicar."
+          : "Rascunho salvo.",
+    );
     setOpen(false);
     load();
   };
@@ -290,26 +303,40 @@ export default function AdminArticles() {
                     <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="estado-artigo">Estado</Label>
-                  <Select value={isAdmin ? form.status : "draft"} onValueChange={(v) => setForm({ ...form, status: v })} disabled={!isAdmin}>
-                    <SelectTrigger id="estado-artigo" aria-describedby={isAdmin ? undefined : "estado-ajuda"}><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Rascunho</SelectItem>
-                      <SelectItem value="published">Publicado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {!isAdmin && (
-                    <p id="estado-ajuda" className="mt-1 text-xs text-muted-foreground">
-                      Só um administrador pode publicar.
+                {isAdmin ? (
+                  <div>
+                    <Label htmlFor="estado-artigo">Estado</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                      <SelectTrigger id="estado-artigo"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Rascunho</SelectItem>
+                        <SelectItem value="review">Em revisão</SelectItem>
+                        <SelectItem value="published">Publicado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm font-medium">Estado</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {STATUS_LABEL[editing?.status ?? "draft"]}. Só um administrador pode publicar.
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               <div><Label>Slug (URL do artigo)</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
 
-              <Button onClick={save} className="w-full">Guardar Artigo</Button>
+              {isAdmin ? (
+                <Button onClick={() => save()} className="w-full">Guardar Artigo</Button>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button variant="outline" onClick={() => save("draft")} className="hover:bg-secondary hover:text-foreground">
+                    Salvar rascunho
+                  </Button>
+                  <Button onClick={() => save("review")}>Enviar para revisão</Button>
+                </div>
+              )}
             </div>
               </TabsContent>
             </Tabs>
@@ -317,11 +344,18 @@ export default function AdminArticles() {
         </Dialog>
       </div>
 
+      {isAdmin && items.some((a) => a.status === "review") && (
+        <p className="mb-4 rounded-lg border border-border bg-chip px-4 py-3 text-sm text-chip-foreground" role="status">
+          {items.filter((a) => a.status === "review").length} artigo(s) aguardando revisão. Abra, revise e mude o estado para Publicado.
+        </p>
+      )}
+
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-3">Título</th>
+              <th className="text-left p-3">Autor</th>
               <th className="text-left p-3">Estado</th>
               <th className="text-left p-3">Views</th>
               <th className="w-24"></th>
@@ -331,9 +365,10 @@ export default function AdminArticles() {
             {items.map((a) => (
               <tr key={a.id} className="border-t border-border hover:bg-muted/20">
                 <td className="p-3 font-medium">{a.title}</td>
+                <td className="p-3 text-muted-foreground">{a.author_name_manual || "-"}</td>
                 <td className="p-3">
-                  <Badge variant={a.status === "published" ? "chip" : "draft"}>
-                    {a.status === "published" ? "Publicado" : "Rascunho"}
+                  <Badge variant={a.status === "published" ? "chip" : a.status === "review" ? "review" : "draft"}>
+                    {STATUS_LABEL[a.status] ?? a.status}
                   </Badge>
                 </td>
                 <td className="p-3 text-muted-foreground">{a.views}</td>
@@ -349,7 +384,7 @@ export default function AdminArticles() {
                 </td>
               </tr>
             ))}
-            {items.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">Sem artigos</td></tr>}
+            {items.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Sem artigos</td></tr>}
           </tbody>
         </table>
       </div>
