@@ -439,3 +439,9 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - `About.tsx`: o cartão usa `Avatar` do shadcn (Radix), que troca para as iniciais (`bg-chip`/`text-chip-foreground`, `aria-hidden`, porque o nome já está no `h4`) quando a imagem não carrega ou não existe. A foto genérica do Unsplash usada como padrão foi removida.
 - `src/lib/iniciais.ts`: primeira letra do primeiro e do último nome, em maiúsculas ("Camila Helena Nogueira" vira "CN"; "Misha" vira "M").
 - Visto no navegador local (`/sobre`, modo claro): iniciais aparecem para link expirado e a foto válida carrega. Upload não testado.
+
+### Erro ao salvar artigo existente (13/11/2026)
+
+- Sintoma: ao salvar de novo um rascunho (ou qualquer `UPDATE` em `articles`, inclusive o admin publicando), o Supabase devolvia `record "new" has no field "updated_at"`. Criar artigo novo funcionava.
+- Causa: o banco real tem um trigger de `UPDATE` em `articles` que grava `NEW.updated_at` (provavelmente `update_articles_updated_at`, da migration de acessos), mas a tabela real não tem a coluna `updated_at` (conferido pela REST: erro 42703).
+- Correção: `supabase/migrations/20261113000000_articles_updated_at.sql` cria `articles.updated_at timestamptz NOT NULL DEFAULT now()`. Rodar no SQL Editor; não precisa de deploy do front.
