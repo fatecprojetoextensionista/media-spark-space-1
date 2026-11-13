@@ -20,7 +20,8 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { User, Trash2, Loader2, Linkedin, Mail, Plus, Pencil, X } from "lucide-react";
+import { User, Trash2, Loader2, Linkedin, Mail, Plus, Pencil, X, Upload } from "lucide-react";
+import { iniciais } from "@/lib/iniciais";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
@@ -44,6 +45,7 @@ export default function AdminAuthors() {
   const [name, setName] = useState("");
   const [roleType, setRoleType] = useState<'autor' | 'desenvolvedor' | 'orientador'>("autor");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [email, setEmail] = useState("");
   const [semestre, setSemestre] = useState("");
@@ -96,9 +98,39 @@ export default function AdminAuthors() {
     document.getElementById("name")?.focus();
   };
 
+  const uploadPhoto = async (arquivo: File) => {
+    if (!arquivo.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Escolha uma imagem (JPG, PNG ou WebP).", variant: "destructive" });
+      return;
+    }
+    if (arquivo.size > 5 * 1024 * 1024) {
+      toast({ title: "Imagem grande demais", description: "Use uma foto de até 5 MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingPhoto(true);
+    const nomeLimpo = arquivo.name.toLowerCase().normalize("NFD").replace(/[^a-z0-9.]+/g, "-");
+    const caminho = `authors/${Date.now()}-${nomeLimpo}`;
+    const { error } = await supabase.storage.from("media").upload(caminho, arquivo, { contentType: arquivo.type });
+    setUploadingPhoto(false);
+    if (error) {
+      toast({ title: "Erro ao enviar foto", description: error.message, variant: "destructive" });
+      return;
+    }
+    setPhotoUrl(supabase.storage.from("media").getPublicUrl(caminho).data.publicUrl);
+    toast({ title: "Foto enviada", description: "Clique em salvar para guardar no cadastro." });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (photoUrl.trim().startsWith("blob:")) {
+      toast({
+        title: "Link de foto inválido",
+        description: "Esse é um link temporário (blob:) que só funciona no seu computador. Use o botão Enviar foto.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -244,13 +276,46 @@ export default function AdminAuthors() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="photo">URL da Foto de Perfil</Label>
-                <Input 
-                  id="photo" 
-                  value={photoUrl} 
-                  onChange={(e) => setPhotoUrl(e.target.value)} 
-                  placeholder="https://images.unsplash.com/... ou link público" 
+                <Label htmlFor="photo">Foto de Perfil</Label>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-14 w-14 shrink-0 border border-border">
+                    <AvatarImage src={photoUrl || undefined} alt="" className="object-cover" />
+                    <AvatarFallback className="bg-chip text-chip-foreground font-semibold">
+                      {iniciais(name) || <User size={18} aria-hidden="true" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only peer"
+                      disabled={uploadingPhoto}
+                      onChange={(e) => {
+                        const arquivo = e.target.files?.[0];
+                        e.target.value = "";
+                        if (arquivo) uploadPhoto(arquivo);
+                      }}
+                    />
+                    <span className="inline-flex h-9 items-center gap-1 rounded-md border border-input bg-background px-3 text-sm hover:bg-secondary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring">
+                      <Upload size={14} aria-hidden="true" /> {uploadingPhoto ? "Enviando..." : "Enviar foto"}
+                    </span>
+                  </label>
+                  {photoUrl && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setPhotoUrl("")} className="hover:bg-secondary hover:text-foreground">
+                      Remover
+                    </Button>
+                  )}
+                </div>
+                <Input
+                  id="photo"
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  placeholder="Ou cole um link público da imagem"
+                  aria-describedby="photo-ajuda"
                 />
+                <p id="photo-ajuda" className="text-xs text-muted-foreground">
+                  Prefira enviar o arquivo: links de foto do LinkedIn e do WhatsApp expiram e a foto some.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -327,7 +392,9 @@ export default function AdminAuthors() {
                         <TableCell>
                           <Avatar className="h-9 w-9 border border-border">
                             <AvatarImage src={author.photo_url || ""} alt={author.name} className="object-cover" />
-                            <AvatarFallback><User size={15} /></AvatarFallback>
+                            <AvatarFallback className="bg-chip text-chip-foreground text-xs font-semibold">
+                              {iniciais(author.name) || <User size={15} aria-hidden="true" />}
+                            </AvatarFallback>
                           </Avatar>
                         </TableCell>
                         <TableCell className="font-medium text-sm">{author.name}</TableCell>

@@ -431,3 +431,11 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - A barra do editor trocou o botão "Inserir Imagem" (só URL, via `prompt`) por dois: "Enviar imagem" (input `file` com `accept="image/*"`, que no celular abre câmera ou galeria) e "Imagem por link" (o `prompt` antigo). O upload vai para `media/articles/<timestamp>-<nome-normalizado>` e a imagem entra com a URL pública, largura 100%. Limite de 10 MB checado no navegador; arquivos que não são imagem são recusados.
 - Os comentários do trecho do editor principal foram removidos; os dos blocos 1 e 2 (nó redimensionável e extensão) continuam.
 - Não testado no navegador nem no celular.
+
+### Fotos dos integrantes (12/11/2026)
+
+- Causa das fotos quebradas na página Sobre: 16 dos 19 integrantes tinham link de foto do LinkedIn (`media.licdn.com`) com parâmetro `e=1792627200` (validade até cerca de 21/10/2026), que passou a responder 403; Matheus Favero tinha um link `blob:https://web.whatsapp.com/...`, que só existe no navegador de quem copiou. O `<img>` mostrava o `alt` (nome) espremido no círculo.
+- `AdminAuthors.tsx`: botão "Enviar foto" (upload para `media/authors/<timestamp>-<nome>`, limite de 5 MB, só imagem) com prévia em `Avatar`, botão "Remover" e o campo de link mantido como alternativa, com aviso de que links do LinkedIn e do WhatsApp expiram. Salvar recusa link `blob:`. A tabela de integrantes mostra as iniciais no lugar do ícone quando a foto falha.
+- `About.tsx`: o cartão usa `Avatar` do shadcn (Radix), que troca para as iniciais (`bg-chip`/`text-chip-foreground`, `aria-hidden`, porque o nome já está no `h4`) quando a imagem não carrega ou não existe. A foto genérica do Unsplash usada como padrão foi removida.
+- `src/lib/iniciais.ts`: primeira letra do primeiro e do último nome, em maiúsculas ("Camila Helena Nogueira" vira "CN"; "Misha" vira "M").
+- Visto no navegador local (`/sobre`, modo claro): iniciais aparecem para link expirado e a foto válida carrega. Upload não testado.

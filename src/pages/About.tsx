@@ -9,6 +9,8 @@ import {
   CarouselPrevious 
 } from "@/components/ui/carousel";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { iniciais } from "@/lib/iniciais";
 
 // Importações de imagens existentes da equipe técnica fixa e carrossel
 import equipeImg from "@/assets/grupotec.png"; 
@@ -258,11 +260,12 @@ function renderSecaoPorSemestre(titulo: string, membros: Author[]) {
 function renderMemberCard(member: Author) {
   return (
     <div key={member.id} className="flex flex-col items-center p-6 bg-card border rounded-xl shadow-sm text-center space-y-4 hover:shadow-md transition-shadow">
-      <img
-        src={member.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} 
-        alt={member.name}
-        className="w-24 h-24 rounded-full object-cover border-2 border-primary/20"
-      />
+      <Avatar className="w-24 h-24 border-2 border-primary/20">
+        <AvatarImage src={member.photo_url || undefined} alt="" className="object-cover" />
+        <AvatarFallback className="bg-chip text-chip-foreground text-2xl font-semibold" aria-hidden="true">
+          {iniciais(member.name)}
+        </AvatarFallback>
+      </Avatar>
       <div>
         <h4 className="font-semibold text-lg leading-tight">{member.name}</h4>
         <p className="text-xs text-muted-foreground capitalize mt-1 px-2 py-0.5 bg-secondary rounded-full inline-block">
