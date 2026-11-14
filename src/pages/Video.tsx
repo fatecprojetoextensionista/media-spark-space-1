@@ -45,6 +45,10 @@ export default function Video() {
         const videoId = url.split('/').pop()?.split('?')[0];
         return `https://www.youtube.com/embed/${videoId}`;
       }
+      const curtoOuAoVivo = url.match(/youtube\.com\/(?:shorts|live)\/([\w-]+)/);
+      if (curtoOuAoVivo) {
+        return `https://www.youtube.com/embed/${curtoOuAoVivo[1]}`;
+      }
       return url;
     } catch (e) {
       return url;

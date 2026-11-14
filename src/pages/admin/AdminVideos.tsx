@@ -36,6 +36,9 @@ const empty = {
   category_id: "", status: "draft", author_name_manual: "", group_authors: ""
 };
 
+const ehLinkYoutube = (url: string) =>
+  /^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)[\w-]{6,}/i.test(url.trim());
+
 const statusDe = (v: Video) => v.status || (v.published ? "published" : "draft");
 
 export default function AdminVideos() {
@@ -82,15 +85,10 @@ export default function AdminVideos() {
     setOpen(true);
   };
 
-  const upload = async (file: File, field: "video_url" | "thumbnail_url") => {
-    if (field === "video_url" && file.size > 50 * 1024 * 1024) {
-      toast.error("O vídeo passa de 50 MB, o limite do armazenamento do portal. Publique no YouTube e cole o link.");
-      return;
-    }
+  const upload = async (file: File, field: "thumbnail_url") => {
     setUploadingField(field);
-    const folder = field === "video_url" ? "videos" : "thumbnails";
     const nomeLimpo = file.name.toLowerCase().normalize("NFD").replace(/[^a-z0-9.]+/g, "-");
-    const path = `${folder}/${Date.now()}-${nomeLimpo}`;
+    const path = `thumbnails/${Date.now()}-${nomeLimpo}`;
     const { error } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
     if (error) { toast.error(error.message); setUploadingField(null); return; }
     const { data } = supabase.storage.from("media").getPublicUrl(path);
@@ -101,7 +99,7 @@ export default function AdminVideos() {
 
   const save = async (statusAutor?: StatusAutor) => {
     if (form.title.trim().length < 5) return toast.error("O título precisa ter pelo menos 5 caracteres.");
-    if (!form.video_url.trim()) return toast.error("Cole o link do YouTube ou envie o arquivo do vídeo.");
+    if (!ehLinkYoutube(form.video_url)) return toast.error("Cole um link do YouTube (youtube.com ou youtu.be).");
     if (!form.category_id) return toast.error("Por favor, selecione uma categoria.");
 
     const status = isAdmin ? form.status : (statusAutor ?? "draft");
@@ -199,18 +197,17 @@ export default function AdminVideos() {
               </div>
 
               <div>
-                <Label>URL do vídeo</Label>
-                <div className="flex gap-2 items-center">
-                  <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="Cole o link do YouTube ou envie o arquivo" />
-                  <label className="cursor-pointer">
-                    <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "video_url")} />
-                    <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors">
-                      <Upload size={14} />{uploadingField === "video_url" ? "Enviando..." : "Upload"}
-                    </span>
-                  </label>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Prefira o link do YouTube. Arquivos enviados têm limite de 50 MB.
+                <Label htmlFor="video-url">Link do YouTube</Label>
+                <Input
+                  id="video-url"
+                  type="url"
+                  value={form.video_url}
+                  onChange={(e) => setForm({ ...form, video_url: e.target.value })}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  aria-describedby="video-url-ajuda"
+                />
+                <p id="video-url-ajuda" className="mt-1 text-xs text-muted-foreground">
+                  Publique o vídeo no YouTube (pode ser como "Não listado") e cole o link aqui.
                 </p>
               </div>
 
