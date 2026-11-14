@@ -11,10 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
-// 1. Interface atualizada com os novos campos
-interface Video { 
-  id: string; title: string; slug: string; description: string | null; 
-  video_url: string; thumbnail_url: string | null; category_id: string | null; 
+interface Video {
+  id: string; title: string; slug: string; description: string | null;
+  video_url: string; thumbnail_url: string | null; category_id: string | null;
   status: string; views: number; published_at: string | null; published?: boolean;
   author_name_manual: string | null;
   group_authors: string | null;
@@ -22,16 +21,25 @@ interface Video {
 
 interface Category { id: string; name: string; }
 
-const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+type StatusAutor = "draft" | "review";
 
-// 2. Estado inicial atualizado
-const empty = { 
-  title: "", slug: "", description: "", video_url: "", thumbnail_url: "", 
-  category_id: "", status: "draft", author_name_manual: "", group_authors: "" 
+const STATUS_LABEL: Record<string, string> = {
+  draft: "Rascunho",
+  review: "Em revisão",
+  published: "Publicado",
 };
 
+const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const empty = {
+  title: "", slug: "", description: "", video_url: "", thumbnail_url: "",
+  category_id: "", status: "draft", author_name_manual: "", group_authors: ""
+};
+
+const statusDe = (v: Video) => v.status || (v.published ? "published" : "draft");
+
 export default function AdminVideos() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [items, setItems] = useState<Video[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [open, setOpen] = useState(false);
@@ -40,25 +48,34 @@ export default function AdminVideos() {
   const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   const load = async () => {
+    let query = supabase.from("videos").select("*").order("created_at", { ascending: false });
+    if (!isAdmin && user) query = query.eq("author_id", user.id);
     const [v, c] = await Promise.all([
-      supabase.from("videos").select("*").order("created_at", { ascending: false }),
+      query,
       supabase.from("categories").select("id, name").order("name"),
     ]);
-    setItems(v.data ?? []);
+    const lista = (v.data ?? []) as unknown as Video[];
+    setItems(isAdmin ? [...lista].sort((x, y) => Number(statusDe(y) === "review") - Number(statusDe(x) === "review")) : lista);
     setCats(c.data ?? []);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [isAdmin, user?.id]);
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const canChange = (v: Video) => isAdmin || statusDe(v) !== "published";
+
+  const openNew = () => {
+    setEditing(null);
+    setForm({ ...empty, author_name_manual: isAdmin ? "" : (user?.user_metadata?.display_name ?? "") });
+    setOpen(true);
+  };
 
   const openEdit = (v: Video) => {
     setEditing(v);
     setForm({
       title: v.title, slug: v.slug, description: v.description ?? "",
       video_url: v.video_url, thumbnail_url: v.thumbnail_url ?? "",
-      category_id: v.category_id ?? "", 
-      status: v.status || (v.published ? "published" : "draft"),
+      category_id: v.category_id ?? "",
+      status: statusDe(v),
       author_name_manual: v.author_name_manual ?? "",
       group_authors: v.group_authors ?? "",
     });
@@ -66,42 +83,59 @@ export default function AdminVideos() {
   };
 
   const upload = async (file: File, field: "video_url" | "thumbnail_url") => {
+    if (field === "video_url" && file.size > 50 * 1024 * 1024) {
+      toast.error("O vídeo passa de 50 MB, o limite do armazenamento do portal. Publique no YouTube e cole o link.");
+      return;
+    }
     setUploadingField(field);
     const folder = field === "video_url" ? "videos" : "thumbnails";
-    const path = `${folder}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("media").upload(path, file);
+    const nomeLimpo = file.name.toLowerCase().normalize("NFD").replace(/[^a-z0-9.]+/g, "-");
+    const path = `${folder}/${Date.now()}-${nomeLimpo}`;
+    const { error } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
     if (error) { toast.error(error.message); setUploadingField(null); return; }
     const { data } = supabase.storage.from("media").getPublicUrl(path);
     setForm((f) => ({ ...f, [field]: data.publicUrl }));
     setUploadingField(null);
-    toast.success("Ficheiro carregado com sucesso!");
+    toast.success("Arquivo enviado.");
   };
 
-  const save = async () => {
-    const isPublished = form.status === "published";
-    
-    const payload: any = {
+  const save = async (statusAutor?: StatusAutor) => {
+    if (form.title.trim().length < 5) return toast.error("O título precisa ter pelo menos 5 caracteres.");
+    if (!form.video_url.trim()) return toast.error("Cole o link do YouTube ou envie o arquivo do vídeo.");
+    if (!form.category_id) return toast.error("Por favor, selecione uma categoria.");
+
+    const status = isAdmin ? form.status : (statusAutor ?? "draft");
+    const isPublished = status === "published";
+
+    const payload: Record<string, unknown> = {
       title: form.title,
       slug: form.slug || slugify(form.title),
       description: form.description || null,
       video_url: form.video_url,
       thumbnail_url: form.thumbnail_url || null,
       category_id: form.category_id || null,
-      status: form.status,
+      status,
       published: isPublished,
-      author_id: user?.id,
       author_name_manual: form.author_name_manual || null,
       group_authors: form.group_authors || null,
       published_at: isPublished ? (editing?.published_at ?? new Date().toISOString()) : null,
     };
+    if (!editing) payload.author_id = user?.id;
 
-    const { error } = editing
-      ? await supabase.from("videos").update(payload).eq("id", editing.id)
-      : await supabase.from("videos").insert(payload);
+    const { data, error } = editing
+      ? await supabase.from("videos").update(payload as never).eq("id", editing.id).select("id")
+      : await supabase.from("videos").insert(payload as never).select("id");
 
     if (error) return toast.error(error.message);
-    
-    toast.success("Alterações guardadas!");
+    if (!data || data.length === 0) return toast.error("Sem permissão para salvar este vídeo.");
+
+    toast.success(
+      isAdmin
+        ? "Alterações guardadas!"
+        : status === "review"
+          ? "Vídeo enviado para revisão. Um administrador vai avaliar e publicar."
+          : "Rascunho salvo.",
+    );
     setOpen(false);
     await load();
   };
@@ -114,12 +148,18 @@ export default function AdminVideos() {
     load();
   };
 
+  const pendentes = items.filter((v) => statusDe(v) === "review").length;
+
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-serif font-bold uppercase tracking-tighter">Vídeos</h1>
-          <p className="text-muted-foreground text-sm">Gerencie o conteúdo de vídeo do portal</p>
+          <p className="text-muted-foreground text-sm">
+            {isAdmin
+              ? "Gerencie o conteúdo de vídeo do portal"
+              : "Os seus vídeos. Salve como rascunho; um administrador revisa e publica."}
+          </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -131,30 +171,28 @@ export default function AdminVideos() {
             <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} vídeo</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editing ? form.slug : slugify(e.target.value) })} /></div>
-              
-              {/* 3. Novos campos de Autor e Grupo adicionados aqui */}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Nome do Autor</Label>
-                  <Input 
-                    value={form.author_name_manual} 
-                    onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })} 
-                    placeholder="Ex: Giovanna" 
+                  <Input
+                    value={form.author_name_manual}
+                    onChange={(e) => setForm({ ...form, author_name_manual: e.target.value })}
+                    placeholder="Ex: Giovanna"
                   />
                 </div>
                 <div>
                   <Label>Grupo / Equipe</Label>
-                  <Input 
-                    value={form.group_authors} 
-                    onChange={(e) => setForm({ ...form, group_authors: e.target.value })} 
-                    placeholder="Ex: Design Digital" 
+                  <Input
+                    value={form.group_authors}
+                    onChange={(e) => setForm({ ...form, group_authors: e.target.value })}
+                    placeholder="Ex: Design Digital"
                   />
                 </div>
               </div>
 
               <div><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
-              
-              {/* Placeholder atualizado para indicar que é a descrição/resumo */}
+
               <div>
                 <Label>Descrição / Resumo</Label>
                 <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Escreva um breve resumo do vídeo..." />
@@ -163,24 +201,27 @@ export default function AdminVideos() {
               <div>
                 <Label>URL do vídeo</Label>
                 <div className="flex gap-2 items-center">
-                  <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="URL do YouTube ou carregue ficheiro" />
+                  <Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="Cole o link do YouTube ou envie o arquivo" />
                   <label className="cursor-pointer">
                     <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "video_url")} />
                     <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors">
-                      <Upload size={14} />{uploadingField === "video_url" ? "..." : "Upload"}
+                      <Upload size={14} />{uploadingField === "video_url" ? "Enviando..." : "Upload"}
                     </span>
                   </label>
                 </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Prefira o link do YouTube. Arquivos enviados têm limite de 50 MB.
+                </p>
               </div>
 
               <div>
                 <Label>Thumbnail (Capa)</Label>
                 <div className="flex gap-2 items-center">
-                  <Input value={form.thumbnail_url} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="URL da imagem ou carregue ficheiro" />
+                  <Input value={form.thumbnail_url} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} placeholder="URL da imagem ou envie o arquivo" />
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "thumbnail_url")} />
                     <span className="inline-flex items-center gap-1 px-3 py-2 border border-border rounded-md text-sm hover:bg-muted transition-colors">
-                      <Upload size={14} />{uploadingField === "thumbnail_url" ? "..." : "Upload"}
+                      <Upload size={14} />{uploadingField === "thumbnail_url" ? "Enviando..." : "Upload"}
                     </span>
                   </label>
                 </div>
@@ -195,53 +236,89 @@ export default function AdminVideos() {
                     <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Estado de Publicação</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Rascunho</SelectItem>
-                      <SelectItem value="published">Publicado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isAdmin ? (
+                  <div>
+                    <Label htmlFor="estado-video">Estado de Publicação</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                      <SelectTrigger id="estado-video"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Rascunho</SelectItem>
+                        <SelectItem value="review">Em revisão</SelectItem>
+                        <SelectItem value="published">Publicado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm font-medium">Estado</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {STATUS_LABEL[editing ? statusDe(editing) : "draft"]}. Só um administrador pode publicar.
+                    </p>
+                  </div>
+                )}
               </div>
-              <Button onClick={save} className="w-full bg-primary text-primary-foreground h-12">Guardar Alterações</Button>
+
+              {isAdmin ? (
+                <Button onClick={() => save()} className="w-full bg-primary text-primary-foreground h-12">Guardar Alterações</Button>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button variant="outline" onClick={() => save("draft")} className="h-12 hover:bg-secondary hover:text-foreground">
+                    Salvar rascunho
+                  </Button>
+                  <Button onClick={() => save("review")} className="h-12">Enviar para revisão</Button>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Tabela de listagem permanece igual */}
+      {isAdmin && pendentes > 0 && (
+        <p className="mb-4 rounded-lg border border-border bg-chip px-4 py-3 text-sm text-chip-foreground" role="status">
+          {pendentes} vídeo(s) aguardando revisão. Abra, revise e mude o estado para Publicado.
+        </p>
+      )}
+
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-4 font-semibold">Título</th>
+              <th className="text-left p-4 font-semibold">Autor</th>
               <th className="text-left p-4 font-semibold">Estado</th>
               <th className="text-left p-4 font-semibold">Views</th>
               <th className="w-24 p-4">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {items.map((v) => (
-              <tr key={v.id} className="hover:bg-muted/30 transition-colors">
-                <td className="p-4 font-medium">{v.title}</td>
-                <td className="p-4">
-                  <Badge variant={v.status === "published" || v.published ? "chip" : "draft"}>
-                    {v.status === "published" || v.published ? "Publicado" : "Rascunho"}
-                  </Badge>
-                </td>
-                <td className="p-4 text-muted-foreground">{v.views || 0}</td>
-                <td className="p-4 flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${v.title}`}><Pencil size={14} /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(v.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${v.title}`}><Trash2 size={14} /></Button>
-                </td>
-              </tr>
-            ))}
+            {items.map((v) => {
+              const status = statusDe(v);
+              return (
+                <tr key={v.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="p-4 font-medium">{v.title}</td>
+                  <td className="p-4 text-muted-foreground">{v.author_name_manual || "-"}</td>
+                  <td className="p-4">
+                    <Badge variant={status === "published" ? "chip" : status === "review" ? "review" : "draft"}>
+                      {STATUS_LABEL[status] ?? status}
+                    </Badge>
+                  </td>
+                  <td className="p-4 text-muted-foreground">{v.views || 0}</td>
+                  <td className="p-4 flex gap-1">
+                    {canChange(v) ? (
+                      <>
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="text-action-edit hover:bg-secondary hover:text-action-edit" aria-label={`Editar ${v.title}`}><Pencil size={14} /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => remove(v.id)} className="text-action-delete hover:bg-secondary hover:text-action-delete" aria-label={`Apagar ${v.title}`}><Trash2 size={14} /></Button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Publicado pelo admin</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {items.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-10 text-center text-muted-foreground italic">
+                <td colSpan={5} className="p-10 text-center text-muted-foreground italic">
                   Nenhum vídeo encontrado. Comece criando um novo!
                 </td>
               </tr>

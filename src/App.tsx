@@ -58,7 +58,7 @@ const App = () => (
             >
               <Route index element={<ProtectedAdmin adminOnly><AdminOverview /></ProtectedAdmin>} />
               <Route path="articles" element={<AdminArticles />} />
-              <Route path="videos" element={<ProtectedAdmin adminOnly><AdminVideos /></ProtectedAdmin>} />
+              <Route path="videos" element={<AdminVideos />} />
               <Route path="categories" element={<ProtectedAdmin adminOnly><AdminCategories /></ProtectedAdmin>} />
               <Route path="authors" element={<ProtectedAdmin adminOnly><AdminAuthors /></ProtectedAdmin>} />
               <Route path="users" element={<ProtectedAdmin adminOnly><AdminUsers /></ProtectedAdmin>} />

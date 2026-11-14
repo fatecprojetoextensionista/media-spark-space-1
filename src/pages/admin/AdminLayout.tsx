@@ -9,7 +9,7 @@ import logoWhite from "@/assets/logo-white.png";
 const links = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true, adminOnly: true },
   { to: "/admin/articles", label: "Artigos", icon: FileText, adminOnly: false },
-  { to: "/admin/videos", label: "Vídeos", icon: Video, adminOnly: true },
+  { to: "/admin/videos", label: "Vídeos", icon: Video, adminOnly: false },
   { to: "/admin/categories", label: "Categorias", icon: FolderTree, adminOnly: true },
   { to: "/admin/authors", label: "Autores", icon: UserCheck, adminOnly: true },
   { to: "/admin/users", label: "Usuários", icon: Users, adminOnly: true },
