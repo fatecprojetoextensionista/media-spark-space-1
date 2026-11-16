@@ -460,3 +460,9 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - Causa provável, não confirmada: `categories` responde para `anon` pela REST, mas o banco real costuma ter policies separadas por papel (em `articles` havia "Leitura pública para anon"), e conta logada sem policy de `SELECT` recebe a lista vazia. `supabase/migrations/20261116000000_categorias_leitura.sql` cria "Categorias visiveis para todos" (`SELECT` para `anon` e `authenticated`, `USING true`). Não liga RLS: se a tabela estiver sem RLS, a policy não muda nada e a escrita do admin continua como estava.
 - `AdminArticles` e `AdminVideos`: rascunho exige só título (artigo: `rascunhoSchema`; vídeo: título não vazio e link do YouTube válido). Categoria, título com 5+ caracteres e conteúdo mínimo do artigo só são exigidos para "Em revisão" e "Publicado". Se a lista de categorias vier vazia, o `Select` mostra o item desativado "Nenhuma categoria carregada. Recarregue a página."
 - Não testado em navegador com conta de autor.
+
+### Prévia da descrição do vídeo (`Video.tsx`, 16/11/2026)
+
+- Acima do player, a descrição era cortada em 250 caracteres com `substring` e "..." fixo, às vezes no meio da palavra ("Tópi..."), e o usuário entendeu que o texto não tinha sido salvo inteiro. O texto completo sempre esteve na seção "Sobre este vídeo", abaixo do player.
+- Agora `resumoDescricao` corta no último espaço antes de 250 caracteres (`LIMITE_RESUMO`), tira pontuação solta do fim e só põe "…" quando o texto é maior; nesse caso aparece o link "Ler a descrição completa", que leva à seção `#sobre-este-video` (`scroll-mt-28` para não ficar sob o cabeçalho fixo).
+- Não testado em navegador.

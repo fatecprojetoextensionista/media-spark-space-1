@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+const LIMITE_RESUMO = 250;
+
+function resumoDescricao(texto: string) {
+  const limpo = texto.trim();
+  if (limpo.length <= LIMITE_RESUMO) return limpo;
+  const corte = limpo.slice(0, LIMITE_RESUMO);
+  const ultimoEspaco = corte.lastIndexOf(" ");
+  return `${(ultimoEspaco > 0 ? corte.slice(0, ultimoEspaco) : corte).replace(/[\s,.;:]+$/, "")}…`;
+}
+
 export default function Video() {
   const { id } = useParams(); // Na rota, este 'id' agora receberá o slug
   const [video, setVideo] = useState<any>(null);
@@ -91,10 +101,18 @@ export default function Video() {
       </div>
 
       {video.description && (
-        <div className="mb-10">
-          <p className="text-xl text-muted-foreground italic leading-relaxed border-l-4 border-accent/30 pl-4">
-            {video.description.substring(0, 250)}...
+        <div className="mb-10 border-l-4 border-accent/30 pl-4">
+          <p className="text-xl text-muted-foreground italic leading-relaxed">
+            {resumoDescricao(video.description)}
           </p>
+          {video.description.trim().length > LIMITE_RESUMO && (
+            <a
+              href="#sobre-este-video"
+              className="mt-2 inline-block rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              Ler a descrição completa
+            </a>
+          )}
         </div>
       )}
 
@@ -112,7 +130,7 @@ export default function Video() {
         )}
       </div>
 
-      <div className="prose prose-lg dark:prose-invert max-w-none">
+      <div id="sobre-este-video" className="prose prose-lg dark:prose-invert max-w-none scroll-mt-28">
         <h3 className="text-xl font-bold mb-4">Sobre este vídeo</h3>
         <p className="text-foreground/90 leading-loose whitespace-pre-wrap">
           {video.description}
