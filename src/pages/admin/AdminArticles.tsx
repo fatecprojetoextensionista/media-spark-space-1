@@ -33,6 +33,10 @@ const articleSchema = z.object({
   content: z.string().min(20, "O artigo está muito curto. Escreva algum conteúdo."),
 });
 
+const rascunhoSchema = z.object({
+  title: z.string().trim().min(1, "Dê um título ao rascunho para poder salvar."),
+});
+
 const STATUS_LABEL: Record<string, string> = {
   draft: "Rascunho",
   review: "Em revisão",
@@ -129,8 +133,9 @@ export default function AdminArticles() {
   };
 
   const save = async (statusAutor?: "draft" | "review") => {
-    const validation = articleSchema.safeParse(form);
-    
+    const statusAlvo = isAdmin ? form.status : (statusAutor ?? "draft");
+    const validation = (statusAlvo === "draft" ? rascunhoSchema : articleSchema).safeParse(form);
+
     if (!validation.success) {
       const errorMessage = validation.error.errors[0].message;
       toast.error(errorMessage);
@@ -300,7 +305,7 @@ export default function AdminArticles() {
                   <Label>Categoria</Label>
                   <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                    <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>{cats.length === 0 ? <SelectItem value="__sem_categorias" disabled>Nenhuma categoria carregada. Recarregue a página.</SelectItem> : cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 {isAdmin ? (

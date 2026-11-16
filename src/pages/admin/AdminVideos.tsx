@@ -98,11 +98,14 @@ export default function AdminVideos() {
   };
 
   const save = async (statusAutor?: StatusAutor) => {
-    if (form.title.trim().length < 5) return toast.error("O título precisa ter pelo menos 5 caracteres.");
-    if (!ehLinkYoutube(form.video_url)) return toast.error("Cole um link do YouTube (youtube.com ou youtu.be).");
-    if (!form.category_id) return toast.error("Por favor, selecione uma categoria.");
-
     const status = isAdmin ? form.status : (statusAutor ?? "draft");
+    const rascunho = status === "draft";
+
+    if (rascunho && !form.title.trim()) return toast.error("Dê um título ao rascunho para poder salvar.");
+    if (!rascunho && form.title.trim().length < 5) return toast.error("O título precisa ter pelo menos 5 caracteres.");
+    if (!ehLinkYoutube(form.video_url)) return toast.error("Cole um link do YouTube (youtube.com ou youtu.be).");
+    if (!rascunho && !form.category_id) return toast.error("Escolha uma categoria antes de enviar para revisão.");
+
     const isPublished = status === "published";
 
     const payload: Record<string, unknown> = {
@@ -230,7 +233,7 @@ export default function AdminVideos() {
                   <Label>Categoria</Label>
                   <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Selecionar categoria" /></SelectTrigger>
-                    <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>{cats.length === 0 ? <SelectItem value="__sem_categorias" disabled>Nenhuma categoria carregada. Recarregue a página.</SelectItem> : cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 {isAdmin ? (
