@@ -89,7 +89,7 @@ export default function Video() {
       <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground mb-8 border-y py-4 italic">
         {(video.author_name_manual || video.group_authors) && (
           <span className="font-semibold text-foreground not-italic">
-            Por: {video.author_name_manual} {video.group_authors && `(${video.group_authors})`}
+            Por: {video.author_name_manual?.trim() || video.group_authors}
           </span>
         )}
         <span>·</span>

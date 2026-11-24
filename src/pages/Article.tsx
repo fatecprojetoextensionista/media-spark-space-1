@@ -237,9 +237,7 @@ export default function Article() {
                 <div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Autor(es)</p>
                   <h4 className="text-lg font-bold text-foreground font-serif">
-                    {article.author_name_manual}
-                    {article.author_name_manual && article.group_authors && " & "}
-                    {article.group_authors}
+                    {article.author_name_manual?.trim() || article.group_authors}
                   </h4>
                 </div>
                 

@@ -89,9 +89,7 @@ export default function ArticlePreview({
                 Autor(es)
               </p>
               <h4 className="text-lg font-bold text-foreground font-serif">
-                {authorName}
-                {authorName && groupAuthors && " & "}
-                {groupAuthors}
+                {authorName.trim() || groupAuthors}
               </h4>
             </div>
           </div>

@@ -466,3 +466,9 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - Acima do player, a descrição era cortada em 250 caracteres com `substring` e "..." fixo, às vezes no meio da palavra ("Tópi..."), e o usuário entendeu que o texto não tinha sido salvo inteiro. O texto completo sempre esteve na seção "Sobre este vídeo", abaixo do player.
 - Agora `resumoDescricao` corta no último espaço antes de 250 caracteres (`LIMITE_RESUMO`), tira pontuação solta do fim e só põe "…" quando o texto é maior; nesse caso aparece o link "Ler a descrição completa", que leva à seção `#sobre-este-video` (`scroll-mt-28` para não ficar sob o cabeçalho fixo).
 - Não testado em navegador.
+
+### Autor no fim do artigo e do vídeo (24/11/2026)
+
+- Os autores preenchem "Grupo / Equipe" com o tema do trabalho (a planilha do professor nomeia as equipes pelo tema), então o grupo costuma repetir o título do artigo. O rodapé de `Article.tsx` e da prévia `ArticlePreview.tsx` juntava "autor & grupo", e `Video.tsx` mostrava "Por: autor (grupo)", o que aparecia como "Autores & Nome do artigo".
+- Agora os três mostram só `author_name_manual` (com `trim`); o grupo só aparece quando não há nome de autor. O campo continua no formulário e no banco.
+- Não testado em navegador.
