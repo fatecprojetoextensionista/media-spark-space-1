@@ -1,3 +1,4 @@
+import { erroDaImagem } from "@/lib/limiteImagem";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -99,6 +100,8 @@ export default function AdminArticles() {
   };
 
   const uploadCover = async (file: File) => {
+    const erro = erroDaImagem(file);
+    if (erro) return toast.error(erro);
     setUploadingCover(true);
     const path = `articles/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(path, file);
@@ -116,6 +119,8 @@ export default function AdminArticles() {
   };
 
   const uploadAuthorPhoto = async (file: File) => {
+    const erro = erroDaImagem(file);
+    if (erro) return toast.error(erro);
     setUploadingAuthor(true);
     const path = `authors/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(path, file);

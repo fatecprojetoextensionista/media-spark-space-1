@@ -1,3 +1,4 @@
+import { erroDaImagem } from "@/lib/limiteImagem";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -99,12 +100,9 @@ export default function AdminAuthors() {
   };
 
   const uploadPhoto = async (arquivo: File) => {
-    if (!arquivo.type.startsWith("image/")) {
-      toast({ title: "Arquivo inválido", description: "Escolha uma imagem (JPG, PNG ou WebP).", variant: "destructive" });
-      return;
-    }
-    if (arquivo.size > 5 * 1024 * 1024) {
-      toast({ title: "Imagem grande demais", description: "Use uma foto de até 5 MB.", variant: "destructive" });
+    const erro = erroDaImagem(arquivo);
+    if (erro) {
+      toast({ title: "Não foi possível enviar a foto", description: erro, variant: "destructive" });
       return;
     }
     setUploadingPhoto(true);

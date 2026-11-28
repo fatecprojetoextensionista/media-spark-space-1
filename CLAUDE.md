@@ -472,3 +472,10 @@ Comentários que existiam no código foram mantidos; a regra vale para código n
 - Os autores preenchem "Grupo / Equipe" com o tema do trabalho (a planilha do professor nomeia as equipes pelo tema), então o grupo costuma repetir o título do artigo. O rodapé de `Article.tsx` e da prévia `ArticlePreview.tsx` juntava "autor & grupo", e `Video.tsx` mostrava "Por: autor (grupo)", o que aparecia como "Autores & Nome do artigo".
 - Agora os três mostram só `author_name_manual` (com `trim`); o grupo só aparece quando não há nome de autor. O campo continua no formulário e no banco.
 - Não testado em navegador.
+
+### Recuo dos parágrafos e limite de imagem (27/11/2026)
+
+- `src/lib/formatarConteudo.ts` trata o HTML do artigo antes de exibir (em `Article.tsx` e na prévia `ArticlePreview.tsx`): remove parágrafos vazios (`<p></p>` ou só espaços, sem imagem), tira espaços e `&nbsp;` do início de cada parágrafo e marca com a classe `recuo` os parágrafos de texto. Não marca parágrafo com imagem (o Tiptap põe a imagem dentro do `<p>`, e o recuo a deslocaria), parágrafo centralizado ou à direita, nem os que estão em lista, citação, tabela ou figura. O recuo é `[&_p.recuo]:indent-[1.25cm]` (padrão ABNT) no contêiner do conteúdo. O banco não é alterado: a correção vale para artigos antigos e novos.
+- `\s` em regex do JavaScript já cobre o espaço não separável (`&nbsp;`), por isso não há ` ` explícito.
+- `src/lib/limiteImagem.ts` (`LIMITE_IMAGEM_MB = 2`, `erroDaImagem`) valida todo upload de imagem: capa e foto do autor (`AdminArticles`), imagens do texto (`RichTextEditor`, antes 10 MB), foto do integrante (`AdminAuthors`, antes 5 MB) e capa do vídeo (`AdminVideos`, antes sem limite). A mensagem diz o tamanho do arquivo e sugere squoosh.app ou tinypng.com. Validação só no navegador; o bucket `media` não tem limite próprio configurado por nós.
+- Formatação testada em Node com jsdom; não testado em navegador.

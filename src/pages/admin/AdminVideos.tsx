@@ -1,3 +1,4 @@
+import { erroDaImagem } from "@/lib/limiteImagem";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,8 @@ export default function AdminVideos() {
   };
 
   const upload = async (file: File, field: "thumbnail_url") => {
+    const erro = erroDaImagem(file);
+    if (erro) return toast.error(erro);
     setUploadingField(field);
     const nomeLimpo = file.name.toLowerCase().normalize("NFD").replace(/[^a-z0-9.]+/g, "-");
     const path = `thumbnails/${Date.now()}-${nomeLimpo}`;

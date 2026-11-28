@@ -1,3 +1,4 @@
+import { formatarConteudo } from "@/lib/formatarConteudo";
 import DOMPurify from "dompurify";
 
 interface ArticlePreviewProps {
@@ -34,7 +35,7 @@ export default function ArticlePreview({
   authorPhotoUrl,
   publishedAt,
 }: ArticlePreviewProps) {
-  const cleanContent = DOMPurify.sanitize(content, { FORBID_TAGS: ["style"] });
+  const cleanContent = formatarConteudo(DOMPurify.sanitize(content, { FORBID_TAGS: ["style"] }));
   const date = publishedAt
     ? new Date(publishedAt).toLocaleDateString("pt-BR", { dateStyle: "long" })
     : "Data definida ao publicar";
@@ -68,7 +69,7 @@ export default function ArticlePreview({
 
       {cleanContent ? (
         <div
-          className="prose prose-lg dark:prose-invert max-w-none text-justify font-sans text-foreground/90"
+          className="prose prose-lg dark:prose-invert max-w-none text-justify font-sans text-foreground/90 [&_p.recuo]:indent-[1.25cm]"
           dangerouslySetInnerHTML={{ __html: cleanContent }}
         />
       ) : (

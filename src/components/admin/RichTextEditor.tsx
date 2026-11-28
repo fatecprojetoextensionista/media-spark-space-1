@@ -1,3 +1,4 @@
+import { erroDaImagem } from "@/lib/limiteImagem";
 import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
@@ -110,12 +111,9 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
   };
 
   const enviarImagem = async (arquivo: File) => {
-    if (!arquivo.type.startsWith('image/')) {
-      toast.error('Escolha um arquivo de imagem (JPG, PNG, WebP ou GIF).');
-      return;
-    }
-    if (arquivo.size > 10 * 1024 * 1024) {
-      toast.error('A imagem passa de 10 MB. Reduza o tamanho e tente de novo.');
+    const erro = erroDaImagem(arquivo);
+    if (erro) {
+      toast.error(erro);
       return;
     }
     setEnviandoImagem(true);

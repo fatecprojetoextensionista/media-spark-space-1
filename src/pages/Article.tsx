@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingWidget } from "@/components/portal/SidebarWidget";
+import { formatarConteudo } from "@/lib/formatarConteudo";
 
 interface TrendingRow {
   title: string;
@@ -168,7 +169,7 @@ export default function Article() {
     </div>
   );
 
-  const sanitizedContent = article.content ? article.content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') : '';
+  const sanitizedContent = article.content ? formatarConteudo(article.content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')) : '';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -218,7 +219,7 @@ export default function Article() {
           )}
 
           <div 
-            className="prose prose-lg dark:prose-invert dark:[--tw-prose-invert-bullets:hsl(var(--muted-foreground))] max-w-none text-justify font-sans text-foreground/90" 
+            className="prose prose-lg dark:prose-invert dark:[--tw-prose-invert-bullets:hsl(var(--muted-foreground))] max-w-none text-justify font-sans text-foreground/90 [&_p.recuo]:indent-[1.25cm]"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
           />
 
